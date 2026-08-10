@@ -21,18 +21,11 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
 
-/*
- * Homebase uses Firestore's HTTPS REST API for dashboard sync.
- * The Firestore console for this project shows the database ID as `default`.
- * Older/default Firebase projects commonly use `(default)`, so we support both
- * and remember whichever one actually exists.
- */
-const FIRESTORE_DATABASE_CANDIDATES = ["default", "(default)"];
-let firestoreDatabaseId = localStorage.getItem("homebase.firebase.databaseId") || "default";
-
-function firestoreDocUrl(databaseId = firestoreDatabaseId) {
-  return `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/${encodeURIComponent(databaseId)}/documents/users/${encodeURIComponent(currentUser.uid)}`;
-}
+// Firestore's REST API uses `(default)` for the project's default database.
+// A missing user document is also returned as HTTP 404, so 404 must NOT be
+// interpreted as "the database does not exist". We seed the document instead.
+const FIRESTORE_DATABASE_ID = "(default)";
+const FIRESTORE_BASE = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/${encodeURIComponent(FIRESTORE_DATABASE_ID)}/documents/users`;
 
 const SYNC_KEYS = [
   "homebase.tasks",
@@ -54,10 +47,14 @@ sessionStorage.setItem(deviceIdKey, deviceId);
 
 let currentUser = null;
 let readyToSync = false;
-let saveTimer = null;
-let pollTimer = null;
 let suppressLocalSync = false;
 let requestInFlight = false;
+let saveTimer = null;
+let pollTimer = null;
+
+function documentUrl() {
+  return `${FIRESTORE_BASE}/${encodeURIComponent(currentUser.uid)}`;
+}
 
 function readLocalDashboard() {
   const data = {};
@@ -94,101 +91,69 @@ function decodeFirestoreValue(value) {
   if ("timestampValue" in value) return value.timestampValue;
   if ("arrayValue" in value) return (value.arrayValue?.values || []).map(decodeFirestoreValue);
   if ("mapValue" in value) {
-    const out = {};
-    for (const [key, child] of Object.entries(value.mapValue?.fields || {})) out[key] = decodeFirestoreValue(child);
-    return out;
+    const result = {};
+    for (const [key, child] of Object.entries(value.mapValue?.fields || {})) {
+      result[key] = decodeFirestoreValue(child);
+    }
+    return result;
   }
   return null;
 }
 
-function decodeRestDocument(doc) {
-  const fields = doc?.fields || {};
-  let dashboard = null;
+function decodeDocument(raw) {
+  const fields = raw?.fields || {};
+  let dashboard = {};
   if (fields.dashboardJson?.stringValue) {
     try { dashboard = JSON.parse(fields.dashboardJson.stringValue); } catch {}
+  } else if (fields.dashboard) {
+    dashboard = decodeFirestoreValue(fields.dashboard) || {};
   }
-  if (!dashboard && fields.dashboard) dashboard = decodeFirestoreValue(fields.dashboard);
   return {
-    dashboard: dashboard && typeof dashboard === "object" ? dashboard : {},
+    dashboard,
     clientUpdatedAt: Number(fields.clientUpdatedAt?.integerValue || 0),
     updatedBy: fields.updatedBy?.stringValue || ""
   };
 }
 
+async function authHeaders() {
+  if (!currentUser) throw Object.assign(new Error("No signed-in Firebase user"), { code: "UNAUTHENTICATED" });
+  const token = await currentUser.getIdToken();
+  return {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json"
+  };
+}
+
+async function firestoreError(response) {
+  let code = String(response.status);
+  let message = `Firestore HTTP ${response.status}`;
+  try {
+    const body = await response.json();
+    code = body?.error?.status || code;
+    message = body?.error?.message || message;
+  } catch {}
+  return Object.assign(new Error(message), { code });
+}
+
 function errorInfo(error) {
-  const code = String(error?.code || error?.status || "network").replace(/^firestore\//, "").replace(/^auth\//, "");
+  const code = String(error?.code || "network").replace(/^auth\//, "");
   const message = String(error?.message || error || "Unknown sync error").replace(/^Firebase:\s*/i, "").trim();
   return { short: `Sync error · ${code}`, detail: message };
 }
 
-async function authHeaders() {
-  if (!currentUser) throw Object.assign(new Error("No signed-in Firebase user"), { code: "unauthenticated" });
-  const token = await currentUser.getIdToken();
-  return { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
-}
-
-async function parseFirestoreError(response) {
-  let message = `Firestore HTTP ${response.status}`;
-  let code = response.status;
-  try {
-    const body = await response.json();
-    message = body?.error?.message || message;
-    code = body?.error?.status || response.status;
-  } catch {}
-  return { message, code };
-}
-
-function isMissingDatabase(message = "") {
-  return /database.*(not found|does not exist)|requested entity was not found/i.test(String(message));
-}
-
-function rememberDatabase(databaseId) {
-  firestoreDatabaseId = databaseId;
-  originalSetItem.call(localStorage, "homebase.firebase.databaseId", databaseId);
-}
-
-async function readFromDatabase(databaseId, headers) {
-  const response = await fetch(firestoreDocUrl(databaseId), { method: "GET", headers, cache: "no-store" });
-  if (response.ok) {
-    rememberDatabase(databaseId);
-    return { foundDatabase: true, document: decodeRestDocument(await response.json()) };
-  }
-  if (response.status === 404) {
-    const info = await parseFirestoreError(response);
-    if (isMissingDatabase(info.message)) return { foundDatabase: false, document: null, error: info };
-    rememberDatabase(databaseId);
-    return { foundDatabase: true, document: null };
-  }
-  const info = await parseFirestoreError(response);
-  throw Object.assign(new Error(info.message), { code: info.code });
-}
-
 async function readCloudDocument() {
   const headers = await authHeaders();
-  const candidates = [firestoreDatabaseId, ...FIRESTORE_DATABASE_CANDIDATES].filter((v, i, a) => a.indexOf(v) === i);
-  let lastMissing = null;
-  for (const databaseId of candidates) {
-    const result = await readFromDatabase(databaseId, headers);
-    if (result.foundDatabase) return result.document;
-    lastMissing = result.error;
-  }
-  throw Object.assign(new Error(lastMissing?.message || "Firestore database not found"), { code: lastMissing?.code || "NOT_FOUND" });
-}
-
-async function writeToDatabase(databaseId, headers, payload) {
-  const response = await fetch(firestoreDocUrl(databaseId), {
-    method: "PATCH",
+  const response = await fetch(documentUrl(), {
+    method: "GET",
     headers,
-    body: JSON.stringify(payload),
     cache: "no-store"
   });
-  if (response.ok) {
-    rememberDatabase(databaseId);
-    return true;
-  }
-  const info = await parseFirestoreError(response);
-  if (response.status === 404 && isMissingDatabase(info.message)) return false;
-  throw Object.assign(new Error(info.message), { code: info.code });
+
+  // This is the normal state on first use: the database exists but the user's
+  // /users/{uid} document has not been created yet.
+  if (response.status === 404) return null;
+  if (!response.ok) throw await firestoreError(response);
+  return decodeDocument(await response.json());
 }
 
 async function writeCloudDocument() {
@@ -206,14 +171,25 @@ async function writeCloudDocument() {
     }
   };
 
-  const candidates = [firestoreDatabaseId, ...FIRESTORE_DATABASE_CANDIDATES].filter((v, i, a) => a.indexOf(v) === i);
-  for (const databaseId of candidates) {
-    if (await writeToDatabase(databaseId, headers, payload)) {
-      sessionStorage.setItem(cloudVersionKey, String(clientUpdatedAt));
-      return clientUpdatedAt;
-    }
-  }
-  throw Object.assign(new Error("Firestore database not found"), { code: "NOT_FOUND" });
+  // PATCH on a document path performs an upsert in the Firestore REST API.
+  const response = await fetch(documentUrl(), {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify(payload),
+    cache: "no-store"
+  });
+  if (!response.ok) throw await firestoreError(response);
+
+  sessionStorage.setItem(cloudVersionKey, String(clientUpdatedAt));
+  return clientUpdatedAt;
+}
+
+function setSyncStatus(text, state = "", detail = "") {
+  const status = document.querySelector("[data-homebase-sync-status]");
+  if (!status) return;
+  status.textContent = text;
+  status.dataset.state = state;
+  status.title = detail || text;
 }
 
 async function saveDashboardToCloud() {
@@ -222,9 +198,9 @@ async function saveDashboardToCloud() {
   try {
     setSyncStatus("Saving…", "busy");
     await writeCloudDocument();
-    setSyncStatus("Synced", "ok", `Cloud sync active · Firestore database: ${firestoreDatabaseId}`);
+    setSyncStatus("Synced", "ok", "Cloud sync active · Firestore (default)");
   } catch (error) {
-    console.error("Homebase REST cloud save failed:", error);
+    console.error("Homebase cloud save failed:", error);
     const info = errorInfo(error);
     setSyncStatus(info.short, "error", info.detail);
   } finally {
@@ -244,17 +220,10 @@ Storage.prototype.setItem = function patchedSetItem(key, value) {
   if (this === localStorage && SYNC_KEYS.includes(String(key))) queueCloudSave();
 };
 
-function setSyncStatus(text, state = "", detail = "") {
-  const status = document.querySelector("[data-homebase-sync-status]");
-  if (!status) return;
-  status.textContent = text;
-  status.dataset.state = state;
-  status.title = detail || text;
-}
-
 function ensureAccountControl() {
   let control = document.querySelector("[data-homebase-account]");
   if (control) return control;
+
   const style = document.createElement("style");
   style.textContent = `
     .homebase-account{position:fixed;top:18px;right:18px;z-index:1000;display:flex;align-items:center;gap:9px;max-width:320px;padding:8px 10px;border:1px solid rgba(220,177,139,.22);border-radius:12px;background:rgba(38,31,27,.94);box-shadow:0 12px 28px rgba(0,0,0,.3);color:#efd3b7;font-family:Nunito,system-ui,sans-serif;backdrop-filter:blur(10px)}
@@ -263,11 +232,13 @@ function ensureAccountControl() {
     .homebase-account button{flex:none;border:1px solid rgba(213,135,117,.25);border-radius:9px;background:linear-gradient(#805046,#5f3934);color:#efd3b7;padding:7px 9px;font:700 12px Nunito,system-ui,sans-serif;cursor:pointer}@media(max-width:700px){.homebase-account{top:8px;right:8px;max-width:240px}.homebase-account-name{max-width:88px}.homebase-sync-status{max-width:115px}}
   `;
   document.head.appendChild(style);
+
   control = document.createElement("div");
   control.className = "homebase-account";
   control.dataset.homebaseAccount = "";
   control.innerHTML = `<div class="homebase-account-copy"><span class="homebase-account-name">Cloud sync</span><span class="homebase-sync-status" data-homebase-sync-status>Sign in to sync</span></div><button type="button" data-homebase-auth-button>Sign in with Google</button>`;
   document.body.appendChild(control);
+
   control.querySelector("[data-homebase-auth-button]").addEventListener("click", async () => {
     const button = control.querySelector("[data-homebase-auth-button]");
     button.disabled = true;
@@ -292,14 +263,15 @@ function renderAccount(user) {
   const control = ensureAccountControl();
   const button = control.querySelector("[data-homebase-auth-button]");
   const copy = control.querySelector(".homebase-account-copy");
-  const existing = control.querySelector("img");
-  if (existing) existing.remove();
+  control.querySelector("img")?.remove();
+
   if (!user) {
     copy.querySelector(".homebase-account-name").textContent = "Cloud sync";
     setSyncStatus("Sign in to sync");
     button.textContent = "Sign in with Google";
     return;
   }
+
   if (user.photoURL) {
     const photo = document.createElement("img");
     photo.src = user.photoURL;
@@ -316,7 +288,10 @@ async function pollCloudDocument() {
   requestInFlight = true;
   try {
     const cloud = await readCloudDocument();
-    if (!cloud) return;
+    if (!cloud) {
+      setSyncStatus("Synced", "ok", "Cloud sync active · waiting for first cloud document");
+      return;
+    }
     const lastApplied = Number(sessionStorage.getItem(cloudVersionKey) || 0);
     if (cloud.clientUpdatedAt > lastApplied && cloud.updatedBy !== deviceId) {
       sessionStorage.setItem(cloudVersionKey, String(cloud.clientUpdatedAt));
@@ -325,9 +300,9 @@ async function pollCloudDocument() {
       setTimeout(() => window.location.reload(), 80);
       return;
     }
-    setSyncStatus("Synced", "ok", `Cloud sync active · Firestore database: ${firestoreDatabaseId}`);
+    setSyncStatus("Synced", "ok", "Cloud sync active · Firestore (default)");
   } catch (error) {
-    console.error("Homebase REST cloud poll failed:", error);
+    console.error("Homebase cloud poll failed:", error);
     const info = errorInfo(error);
     setSyncStatus(info.short, "error", info.detail);
   } finally {
@@ -346,6 +321,7 @@ onAuthStateChanged(auth, async (user) => {
   clearInterval(pollTimer);
   pollTimer = null;
   renderAccount(user);
+
   if (!user) {
     sessionStorage.removeItem(cloudLoadedKey);
     return;
@@ -354,6 +330,7 @@ onAuthStateChanged(auth, async (user) => {
   try {
     const cloud = await readCloudDocument();
     const alreadyLoaded = sessionStorage.getItem(cloudLoadedKey) === user.uid;
+
     if (cloud && !alreadyLoaded && Object.keys(cloud.dashboard || {}).length) {
       applyCloudDashboard(cloud.dashboard);
       sessionStorage.setItem(cloudLoadedKey, user.uid);
@@ -367,12 +344,16 @@ onAuthStateChanged(auth, async (user) => {
     if (cloud) sessionStorage.setItem(cloudVersionKey, String(cloud.clientUpdatedAt || 0));
     readyToSync = true;
 
-    if (!cloud || !Object.keys(cloud.dashboard || {}).length) await saveDashboardToCloud();
-    else setSyncStatus("Synced", "ok", `Cloud sync active · Firestore database: ${firestoreDatabaseId}`);
+    if (!cloud || !Object.keys(cloud.dashboard || {}).length) {
+      // First sync: create /users/{uid} from the current local dashboard.
+      await saveDashboardToCloud();
+    } else {
+      setSyncStatus("Synced", "ok", "Cloud sync active · Firestore (default)");
+    }
 
     startPolling();
   } catch (error) {
-    console.error("Homebase REST cloud load failed:", error);
+    console.error("Homebase cloud load failed:", error);
     const info = errorInfo(error);
     setSyncStatus(info.short, "error", info.detail);
   }
