@@ -28,7 +28,8 @@ import {
   Timer,
   Trash2,
   MessageCircle,
-  Video
+  Video,
+  X
 } from "lucide-react";
 import "./styles.css";
 
@@ -133,7 +134,7 @@ function App() {
                 <span className="task-text">{task.text}</span>
                 <span className={`tag ${task.tag.toLowerCase()}`}>{task.tag}</span>
                 <button aria-label={`Edit ${task.text}`}><Edit3 size={16} /></button>
-                <button aria-label={`Delete ${task.text}`}><Trash2 size={16} /></button>
+                <button aria-label={`Delete ${task.text}`}><X size={16} /></button>
               </div>
             ))}
           </div>
