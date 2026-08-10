@@ -9,16 +9,18 @@
   .page-shell{height:calc(100vh - 24px);min-height:0;overflow:auto}
   .dashboard-grid{height:100%;min-height:0;grid-template-rows:minmax(250px,1.2fr) minmax(205px,1fr) minmax(145px,.62fr);gap:clamp(9px,1vw,16px)}
   .panel{min-height:0;padding:clamp(12px,1.2vw,20px)}
-  .clock-card{padding:clamp(16px,1.8vw,28px)}
-  .day-script{font-size:clamp(22px,1.8vw,30px)}
-  .big-time{font-size:clamp(46px,4vw,68px);margin:clamp(12px,2vh,25px) 0 6px}
-  .date-label{font-size:clamp(15px,1.25vw,20px)}
-  .divider{margin:clamp(12px,2vh,24px) 0}
-  .weather-emoji{font-size:clamp(38px,3.5vw,60px)}
-  .weather-line{gap:clamp(10px,1.3vw,22px)}
-  .weather-line strong{font-size:clamp(24px,2.2vw,35px)}
-  .weather-line span{font-size:clamp(13px,1.05vw,17px)}
-  .weather-meta{margin-left:clamp(54px,5.3vw,92px);font-size:clamp(10px,.8vw,13px)}
+  /* The clock/weather card should hug its content instead of stretching to match the tallest card in row one. */
+  .clock-card{align-self:start;height:auto;padding:clamp(14px,1.5vw,22px)}
+  .day-script{font-size:clamp(21px,1.6vw,27px)}
+  .big-time{font-size:clamp(44px,3.6vw,60px);margin:clamp(9px,1.3vh,16px) 0 4px}
+  .date-label{font-size:clamp(14px,1.1vw,18px)}
+  .divider{margin:clamp(9px,1.3vh,15px) 0}
+  .weather-emoji{font-size:clamp(32px,2.8vw,46px)}
+  .weather-line{gap:clamp(9px,1vw,16px)}
+  .weather-line strong{font-size:clamp(21px,1.8vw,29px)}
+  .weather-line span{font-size:clamp(12px,.95vw,15px)}
+  .weather-line small{font-size:10px}
+  .weather-meta{margin:5px 0 0 clamp(42px,4vw,62px);font-size:clamp(9px,.7vw,11px)}
   .panel h2{font-size:clamp(14px,1.1vw,18px)}
   .task-row{min-height:clamp(34px,4.2vh,46px)}
   .task-text{font-size:clamp(12px,.95vw,16px)}
@@ -45,7 +47,7 @@
   .shell{grid-template-columns:78px minmax(0,1fr);gap:10px;padding:8px}
   .sidebar{top:8px;height:calc(100vh - 16px);padding:10px 6px}
   .nav-item{min-height:66px}.nav-item span{font-size:11px}
-  .dashboard-grid{grid-template-columns:1fr 1fr;grid-template-areas:"clock todo" "week week" "birthdays loa" "warnings brain" "music music" "decor decor";grid-template-rows:minmax(240px,.95fr) minmax(170px,.7fr) minmax(190px,.72fr) minmax(190px,.72fr) minmax(145px,.58fr) minmax(130px,.5fr);height:auto;min-height:calc(100vh - 16px)}
+  .dashboard-grid{grid-template-columns:1fr 1fr;grid-template-areas:"clock todo" "week week" "birthdays loa" "warnings brain" "music music" "decor decor";grid-template-rows:minmax(210px,auto) minmax(170px,.7fr) minmax(190px,.72fr) minmax(190px,.72fr) minmax(145px,.58fr) minmax(130px,.5fr);height:auto;min-height:calc(100vh - 16px);align-items:start}
   .page-shell{height:calc(100vh - 16px);overflow:auto}
   .home-links-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
@@ -57,7 +59,7 @@
   .sidebar nav{gap:4px}.nav-item{min-height:58px}.nav-item span{font-size:11px}
   .page-shell{height:calc(100vh - 16px);overflow:hidden}
   .dashboard-grid{grid-template-rows:minmax(220px,1.08fr) minmax(180px,.88fr) minmax(135px,.58fr);gap:10px}
-  .panel{padding:12px}.clock-card{padding:16px}.day-script{font-size:22px}.big-time{font-size:48px;margin:12px 0 4px}.date-label{font-size:15px}.divider{margin:12px 0}.weather-emoji{font-size:40px}.weather-line strong{font-size:25px}.weather-line span{font-size:13px}.weather-line small{font-size:9px}.weather-meta{margin:5px 0 0 58px;font-size:10px}
+  .panel{padding:12px}.clock-card{padding:14px}.day-script{font-size:20px}.big-time{font-size:44px;margin:8px 0 3px}.date-label{font-size:14px}.divider{margin:8px 0}.weather-emoji{font-size:34px}.weather-line strong{font-size:22px}.weather-line span{font-size:12px}.weather-line small{font-size:9px}.weather-meta{margin:4px 0 0 47px;font-size:9px}
   .panel h2{font-size:14px}.panel header button{font-size:12px}.task-row{min-height:34px}.task-text{font-size:12px}.week-event{min-height:31px;padding:5px 8px}.week-events{gap:5px;margin-top:7px}.week-event span,.week-event strong{font-size:10px}.person-row{min-height:42px}.avatar-dot{width:30px;height:30px}.cc-card{padding:11px}.cc-row{min-height:47px}.cc-footer{padding-top:6px;margin-top:6px}.empty-state{padding:12px 6px}
   .brain-card{padding:11px}.brain-card .real-sticky{height:calc(100% - 38px)!important;margin:7px 4px 0!important;padding:16px 22px!important;font-size:16px!important}
   .music-card{padding:10px 12px}.music-main{margin-top:4px}.album-art,.album-image{width:108px;height:76px}.music-main{grid-template-columns:108px 1fr;gap:12px}.progress{margin-top:5px;margin-left:121px;width:calc(100% - 124px)}.timecodes{margin-left:121px}.controls{margin-top:-2px;gap:16px}.controls .play{width:38px;height:38px}.home-links-card{padding:10px}.home-links-grid{margin-top:6px;gap:6px}.home-links-grid a{padding:6px}.home-links-grid .site-icon{width:26px;height:26px}.home-links-grid .site-icon img{width:18px;height:18px}.home-links-grid span:last-child{font-size:10px}
@@ -73,7 +75,7 @@
   .nav-item{min-height:46px;min-width:46px;padding:5px;border-radius:9px;gap:1px}.nav-item svg{width:20px;height:20px}.nav-item span{font-size:9px}
   .dashboard-grid{display:grid;grid-template-columns:1fr;grid-template-areas:"clock" "todo" "week" "birthdays" "loa";grid-template-rows:auto;gap:10px;height:auto;min-height:0}
   .panel{padding:14px;border-radius:14px}
-  .clock-card{grid-area:clock;padding:18px}.day-script{font-size:24px}.big-time{font-size:52px;margin:14px 0 4px}.date-label{font-size:16px}.divider{margin:14px 0}.weather-line{gap:14px}.weather-emoji{font-size:44px}.weather-line strong{font-size:28px}.weather-line span{font-size:14px}.weather-meta{margin:7px 0 0!important;font-size:11px}
+  .clock-card{grid-area:clock;align-self:start;height:auto;padding:13px 15px}.day-script{font-size:21px}.big-time{font-size:43px;margin:8px 0 2px}.date-label{font-size:14px}.divider{margin:9px 0}.weather-line{gap:10px}.weather-emoji{font-size:32px}.weather-line strong{font-size:22px}.weather-line span{font-size:13px}.weather-line small{font-size:9px}.weather-meta{margin:4px 0 0!important;font-size:10px}
   .todo-card{grid-area:todo;padding-right:14px!important}.task-row{min-height:42px;grid-template-columns:17px 22px minmax(0,1fr) 22px;gap:8px}.task-text{font-size:13px}.panel h2{font-size:15px}.panel header button{font-size:12px}
   .week-card{grid-area:week}.week-events{gap:6px;margin-top:10px}.week-event{min-height:38px;padding:7px 9px}.week-event span{font-size:12px}.week-event strong{font-size:11px}
   .birthdays-card{grid-area:birthdays}.person-row{min-height:48px}.avatar-dot{width:32px;height:32px}
@@ -88,7 +90,7 @@
 
 @media(max-width:480px){
   .shell{padding:6px 6px 70px}.sidebar{left:6px;right:6px;bottom:6px}.nav-item span{display:none}.nav-item{min-width:40px}
-  .panel{padding:12px}.clock-card{padding:15px}.big-time{font-size:46px}.day-script{font-size:22px}.weather-emoji{font-size:38px}
+  .panel{padding:12px}.clock-card{padding:11px 13px}.big-time{font-size:40px}.day-script{font-size:20px}.weather-emoji{font-size:29px}.divider{margin:8px 0}.weather-line{gap:8px}
   .homebase-account{transform:scale(.78)}
   .week-event{gap:8px}.week-event span{max-width:72%}
 }
