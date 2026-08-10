@@ -76,6 +76,16 @@ function applyCloudDashboard(data) {
   } finally { suppressLocalSync = false; }
 }
 
+function firebaseErrorLabel(error) {
+  const rawCode = String(error?.code || "unknown");
+  const code = rawCode.replace(/^firestore\//, "").replace(/^auth\//, "");
+  const message = String(error?.message || "").replace(/^Firebase:\s*/i, "").trim();
+  return {
+    short: `Sync error · ${code}`,
+    detail: message ? `${rawCode}: ${message}` : rawCode
+  };
+}
+
 async function saveDashboardToCloud() {
   if (!currentUser || !readyToSync) return;
   const clientUpdatedAt = Date.now();
@@ -93,7 +103,8 @@ async function saveDashboardToCloud() {
     setSyncStatus("Synced", "ok");
   } catch (error) {
     console.error("Homebase cloud save failed:", error);
-    setSyncStatus("Sync error", "error");
+    const info = firebaseErrorLabel(error);
+    setSyncStatus(info.short, "error", info.detail);
   }
 }
 
@@ -109,11 +120,12 @@ Storage.prototype.setItem = function patchedSetItem(key, value) {
   if (this === localStorage && SYNC_KEYS.includes(String(key))) queueCloudSave();
 };
 
-function setSyncStatus(text, state = "") {
+function setSyncStatus(text, state = "", detail = "") {
   const status = document.querySelector("[data-homebase-sync-status]");
   if (!status) return;
   status.textContent = text;
   status.dataset.state = state;
+  status.title = detail || text;
 }
 
 function ensureAccountControl() {
@@ -121,10 +133,10 @@ function ensureAccountControl() {
   if (control) return control;
   const style = document.createElement("style");
   style.textContent = `
-    .homebase-account{position:fixed;top:18px;right:18px;z-index:1000;display:flex;align-items:center;gap:9px;max-width:250px;padding:8px 10px;border:1px solid rgba(220,177,139,.22);border-radius:12px;background:rgba(38,31,27,.94);box-shadow:0 12px 28px rgba(0,0,0,.3);color:#efd3b7;font-family:Nunito,system-ui,sans-serif;backdrop-filter:blur(10px)}
+    .homebase-account{position:fixed;top:18px;right:18px;z-index:1000;display:flex;align-items:center;gap:9px;max-width:300px;padding:8px 10px;border:1px solid rgba(220,177,139,.22);border-radius:12px;background:rgba(38,31,27,.94);box-shadow:0 12px 28px rgba(0,0,0,.3);color:#efd3b7;font-family:Nunito,system-ui,sans-serif;backdrop-filter:blur(10px)}
     .homebase-account img{width:30px;height:30px;flex:none;border-radius:50%;object-fit:cover;border:1px solid rgba(239,211,183,.25)}
-    .homebase-account-copy{min-width:0;line-height:1.15}.homebase-account-name{display:block;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:700}.homebase-sync-status{display:block;margin-top:3px;color:#bfa389;font-size:10px}.homebase-sync-status[data-state="ok"]{color:#a9bd82}.homebase-sync-status[data-state="error"]{color:#e59082}
-    .homebase-account button{flex:none;border:1px solid rgba(213,135,117,.25);border-radius:9px;background:linear-gradient(#805046,#5f3934);color:#efd3b7;padding:7px 9px;font:700 12px Nunito,system-ui,sans-serif;cursor:pointer}@media(max-width:700px){.homebase-account{top:8px;right:8px;max-width:210px}.homebase-account-name{max-width:88px}}
+    .homebase-account-copy{min-width:0;line-height:1.15}.homebase-account-name{display:block;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:700}.homebase-sync-status{display:block;margin-top:3px;color:#bfa389;font-size:10px;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.homebase-sync-status[data-state="ok"]{color:#a9bd82}.homebase-sync-status[data-state="error"]{color:#e59082}
+    .homebase-account button{flex:none;border:1px solid rgba(213,135,117,.25);border-radius:9px;background:linear-gradient(#805046,#5f3934);color:#efd3b7;padding:7px 9px;font:700 12px Nunito,system-ui,sans-serif;cursor:pointer}@media(max-width:700px){.homebase-account{top:8px;right:8px;max-width:240px}.homebase-account-name{max-width:88px}.homebase-sync-status{max-width:115px}}
   `;
   document.head.appendChild(style);
   control = document.createElement("div");
@@ -135,8 +147,14 @@ function ensureAccountControl() {
   control.querySelector("[data-homebase-auth-button]").addEventListener("click", async () => {
     const button = control.querySelector("[data-homebase-auth-button]"); button.disabled = true;
     try { if (auth.currentUser) await signOut(auth); else await signInWithPopup(auth, provider); }
-    catch (error) { console.error("Google sign-in failed:", error); setSyncStatus(error?.code === "auth/popup-closed-by-user" ? "Sign-in cancelled" : "Sign-in failed", "error"); }
-    finally { button.disabled = false; }
+    catch (error) {
+      console.error("Google sign-in failed:", error);
+      if (error?.code === "auth/popup-closed-by-user") setSyncStatus("Sign-in cancelled", "error");
+      else {
+        const info = firebaseErrorLabel(error);
+        setSyncStatus(`Sign-in error · ${String(error?.code || "unknown").replace(/^auth\//, "")}`, "error", info.detail);
+      }
+    } finally { button.disabled = false; }
   });
   return control;
 }
@@ -153,7 +171,11 @@ function watchCloudDocument(user) {
     if(firstSnapshot){firstSnapshot=false;return;} if(!snapshot.exists())return;
     const data=snapshot.data(); const version=Number(data.clientUpdatedAt||0); const lastApplied=Number(sessionStorage.getItem(cloudVersionKey)||0); if(!version||version<=lastApplied||data.updatedBy===deviceId)return;
     sessionStorage.setItem(cloudVersionKey,String(version));applyCloudDashboard(data.dashboard||{});setSyncStatus("Updated from another device","ok");setTimeout(()=>window.location.reload(),80);
-  },(error)=>{console.error("Homebase cloud listener failed:",error);setSyncStatus("Sync error","error");});
+  },(error)=>{
+    console.error("Homebase cloud listener failed:",error);
+    const info = firebaseErrorLabel(error);
+    setSyncStatus(info.short,"error",info.detail);
+  });
 }
 
 onAuthStateChanged(auth, async (user) => {
@@ -166,7 +188,11 @@ onAuthStateChanged(auth, async (user) => {
     if(!snapshot.exists()){sessionStorage.setItem(cloudLoadedKey,user.uid);readyToSync=true;await saveDashboardToCloud();}
     else{sessionStorage.setItem(cloudLoadedKey,user.uid);sessionStorage.setItem(cloudVersionKey,String(snapshot.data().clientUpdatedAt||0));readyToSync=true;setSyncStatus("Synced","ok");}
     watchCloudDocument(user);
-  } catch(error){console.error("Homebase cloud load failed:",error);setSyncStatus("Sync error","error");}
+  } catch(error){
+    console.error("Homebase cloud load failed:",error);
+    const info = firebaseErrorLabel(error);
+    setSyncStatus(info.short,"error",info.detail);
+  }
 });
 
 ensureAccountControl();
