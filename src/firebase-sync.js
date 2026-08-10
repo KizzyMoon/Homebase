@@ -9,7 +9,7 @@ import {
 import {
   doc,
   getDoc,
-  getFirestore,
+  initializeFirestore,
   onSnapshot,
   serverTimestamp,
   setDoc
@@ -26,7 +26,12 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
+// Force Firestore to use long polling. This is more reliable behind VPNs,
+// privacy extensions and networks that interfere with Firestore's streaming transport.
+const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+  useFetchStreams: false
+});
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
 
