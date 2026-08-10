@@ -11,7 +11,6 @@ import {
   ExternalLink,
   FileText,
   Gamepad2,
-  Heart,
   Home,
   Link,
   Mail,
