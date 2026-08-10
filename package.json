@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
+    "firebase": "latest",
     "vite": "latest",
     "react": "latest",
     "react-dom": "latest",
