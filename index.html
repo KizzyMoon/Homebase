@@ -5,10 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Homebase — Kizzy's cozy personal dashboard." />
     <title>Homebase</title>
+    <style>
+      html,body{min-height:100%;background:#0f0d0c;color:#f4dfd6}
+      body{margin:0}
+      #homebase-boot-error{display:none;min-height:100vh;place-items:center;padding:24px;font-family:system-ui,sans-serif;background:#0f0d0c}
+      #homebase-boot-error>div{max-width:720px;border:1px solid rgba(229,143,127,.28);border-radius:16px;background:#171311;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+      #homebase-boot-error h1{margin:0 0 10px;color:#f4a595;font-size:24px}
+      #homebase-boot-error pre{white-space:pre-wrap;word-break:break-word;color:#c9aaa0;font-size:13px}
+    </style>
     <link rel="stylesheet" href="/src/music-fix.css" />
+    <script>
+      (function(){
+        const arrayKeys=['homebase.tasks','homebase.taskTags','homebase.notes','homebase.brain','homebase.links','homebase.calendarLinks'];
+        for(const key of arrayKeys){
+          const raw=localStorage.getItem(key);
+          if(raw==null) continue;
+          try{
+            const parsed=JSON.parse(raw);
+            if(!Array.isArray(parsed)){
+              localStorage.setItem(key+'.backup',raw);
+              localStorage.removeItem(key);
+            }
+          }catch{
+            localStorage.setItem(key+'.backup',raw);
+            localStorage.removeItem(key);
+          }
+        }
+        window.addEventListener('error',function(e){
+          setTimeout(function(){
+            if(document.getElementById('root')?.children.length) return;
+            const box=document.getElementById('homebase-boot-error');
+            if(!box) return;
+            box.style.display='grid';
+            box.querySelector('pre').textContent=(e.error&&e.error.stack)||e.message||'Unknown startup error';
+          },100);
+        });
+        window.addEventListener('unhandledrejection',function(e){
+          setTimeout(function(){
+            if(document.getElementById('root')?.children.length) return;
+            const box=document.getElementById('homebase-boot-error');
+            if(!box) return;
+            box.style.display='grid';
+            const reason=e.reason;
+            box.querySelector('pre').textContent=(reason&&reason.stack)||String(reason||'Unknown startup error');
+          },100);
+        });
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <div id="homebase-boot-error"><div><h1>Homebase hit a startup error</h1><p>The page loaded, but the app itself failed to start. Copy the error below and send it to me.</p><pre>Waiting for error details…</pre></div></div>
     <script type="module" src="/src/firebase-sync.js"></script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
