@@ -22,12 +22,18 @@ const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
 
 /*
- * Homebase deliberately uses Firestore's HTTPS REST API for dashboard sync.
- * Firebase Auth still handles Google sign-in, but sync no longer depends on
- * Firestore's streaming/WebChannel transport, which can be blocked by VPNs,
- * privacy extensions and some networks.
+ * Homebase uses Firestore's HTTPS REST API for dashboard sync.
+ * The Firestore console for this project shows the database ID as `default`.
+ * Older/default Firebase projects commonly use `(default)`, so we support both
+ * and remember whichever one actually exists.
  */
-const FIRESTORE_DOC_BASE = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/users`;
+const FIRESTORE_DATABASE_CANDIDATES = ["default", "(default)"];
+let firestoreDatabaseId = localStorage.getItem("homebase.firebase.databaseId") || "default";
+
+function firestoreDocUrl(databaseId = firestoreDatabaseId) {
+  return `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/${encodeURIComponent(databaseId)}/documents/users/${encodeURIComponent(currentUser.uid)}`;
+}
+
 const SYNC_KEYS = [
   "homebase.tasks",
   "homebase.taskTags",
@@ -101,7 +107,6 @@ function decodeRestDocument(doc) {
   if (fields.dashboardJson?.stringValue) {
     try { dashboard = JSON.parse(fields.dashboardJson.stringValue); } catch {}
   }
-  // Backwards compatibility with the original Firestore SDK document shape.
   if (!dashboard && fields.dashboard) dashboard = decodeFirestoreValue(fields.dashboard);
   return {
     dashboard: dashboard && typeof dashboard === "object" ? dashboard : {},
@@ -122,25 +127,68 @@ async function authHeaders() {
   return { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
 }
 
+async function parseFirestoreError(response) {
+  let message = `Firestore HTTP ${response.status}`;
+  let code = response.status;
+  try {
+    const body = await response.json();
+    message = body?.error?.message || message;
+    code = body?.error?.status || response.status;
+  } catch {}
+  return { message, code };
+}
+
+function isMissingDatabase(message = "") {
+  return /database.*(not found|does not exist)|requested entity was not found/i.test(String(message));
+}
+
+function rememberDatabase(databaseId) {
+  firestoreDatabaseId = databaseId;
+  originalSetItem.call(localStorage, "homebase.firebase.databaseId", databaseId);
+}
+
+async function readFromDatabase(databaseId, headers) {
+  const response = await fetch(firestoreDocUrl(databaseId), { method: "GET", headers, cache: "no-store" });
+  if (response.ok) {
+    rememberDatabase(databaseId);
+    return { foundDatabase: true, document: decodeRestDocument(await response.json()) };
+  }
+  if (response.status === 404) {
+    const info = await parseFirestoreError(response);
+    if (isMissingDatabase(info.message)) return { foundDatabase: false, document: null, error: info };
+    rememberDatabase(databaseId);
+    return { foundDatabase: true, document: null };
+  }
+  const info = await parseFirestoreError(response);
+  throw Object.assign(new Error(info.message), { code: info.code });
+}
+
 async function readCloudDocument() {
   const headers = await authHeaders();
-  const response = await fetch(`${FIRESTORE_DOC_BASE}/${encodeURIComponent(currentUser.uid)}`, {
-    method: "GET",
+  const candidates = [firestoreDatabaseId, ...FIRESTORE_DATABASE_CANDIDATES].filter((v, i, a) => a.indexOf(v) === i);
+  let lastMissing = null;
+  for (const databaseId of candidates) {
+    const result = await readFromDatabase(databaseId, headers);
+    if (result.foundDatabase) return result.document;
+    lastMissing = result.error;
+  }
+  throw Object.assign(new Error(lastMissing?.message || "Firestore database not found"), { code: lastMissing?.code || "NOT_FOUND" });
+}
+
+async function writeToDatabase(databaseId, headers, payload) {
+  const response = await fetch(firestoreDocUrl(databaseId), {
+    method: "PATCH",
     headers,
+    body: JSON.stringify(payload),
     cache: "no-store"
   });
-  if (response.status === 404) return null;
-  if (!response.ok) {
-    let message = `Firestore HTTP ${response.status}`;
-    let code = response.status;
-    try {
-      const body = await response.json();
-      message = body?.error?.message || message;
-      code = body?.error?.status || response.status;
-    } catch {}
-    throw Object.assign(new Error(message), { code });
+  if (response.ok) {
+    rememberDatabase(databaseId);
+    return true;
   }
-  return decodeRestDocument(await response.json());
+  const info = await parseFirestoreError(response);
+  if (response.status === 404 && isMissingDatabase(info.message)) return false;
+  throw Object.assign(new Error(info.message), { code: info.code });
 }
 
 async function writeCloudDocument() {
@@ -157,24 +205,15 @@ async function writeCloudDocument() {
       updatedBy: { stringValue: deviceId }
     }
   };
-  const response = await fetch(`${FIRESTORE_DOC_BASE}/${encodeURIComponent(currentUser.uid)}`, {
-    method: "PATCH",
-    headers,
-    body: JSON.stringify(payload),
-    cache: "no-store"
-  });
-  if (!response.ok) {
-    let message = `Firestore HTTP ${response.status}`;
-    let code = response.status;
-    try {
-      const body = await response.json();
-      message = body?.error?.message || message;
-      code = body?.error?.status || response.status;
-    } catch {}
-    throw Object.assign(new Error(message), { code });
+
+  const candidates = [firestoreDatabaseId, ...FIRESTORE_DATABASE_CANDIDATES].filter((v, i, a) => a.indexOf(v) === i);
+  for (const databaseId of candidates) {
+    if (await writeToDatabase(databaseId, headers, payload)) {
+      sessionStorage.setItem(cloudVersionKey, String(clientUpdatedAt));
+      return clientUpdatedAt;
+    }
   }
-  sessionStorage.setItem(cloudVersionKey, String(clientUpdatedAt));
-  return clientUpdatedAt;
+  throw Object.assign(new Error("Firestore database not found"), { code: "NOT_FOUND" });
 }
 
 async function saveDashboardToCloud() {
@@ -183,7 +222,7 @@ async function saveDashboardToCloud() {
   try {
     setSyncStatus("Saving…", "busy");
     await writeCloudDocument();
-    setSyncStatus("Synced", "ok", "Cloud sync is using Firestore HTTPS REST transport.");
+    setSyncStatus("Synced", "ok", `Cloud sync active · Firestore database: ${firestoreDatabaseId}`);
   } catch (error) {
     console.error("Homebase REST cloud save failed:", error);
     const info = errorInfo(error);
@@ -286,7 +325,7 @@ async function pollCloudDocument() {
       setTimeout(() => window.location.reload(), 80);
       return;
     }
-    setSyncStatus("Synced", "ok", "Cloud sync is using Firestore HTTPS REST transport.");
+    setSyncStatus("Synced", "ok", `Cloud sync active · Firestore database: ${firestoreDatabaseId}`);
   } catch (error) {
     console.error("Homebase REST cloud poll failed:", error);
     const info = errorInfo(error);
@@ -328,9 +367,8 @@ onAuthStateChanged(auth, async (user) => {
     if (cloud) sessionStorage.setItem(cloudVersionKey, String(cloud.clientUpdatedAt || 0));
     readyToSync = true;
 
-    // If there is no cloud document (or only an old empty document), seed it from this device.
     if (!cloud || !Object.keys(cloud.dashboard || {}).length) await saveDashboardToCloud();
-    else setSyncStatus("Synced", "ok", "Cloud sync is using Firestore HTTPS REST transport.");
+    else setSyncStatus("Synced", "ok", `Cloud sync active · Firestore database: ${firestoreDatabaseId}`);
 
     startPolling();
   } catch (error) {
