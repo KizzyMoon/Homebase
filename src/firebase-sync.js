@@ -37,7 +37,8 @@ const SYNC_KEYS = [
   "homebase.brain",
   "homebase.birthdays",
   "homebase.links",
-  "homebase.spotifyConfig"
+  "homebase.spotifyConfig",
+  "homebase.calendarLinks"
 ];
 
 const originalSetItem = Storage.prototype.setItem;
