@@ -26,17 +26,20 @@
       }
 
       * { box-sizing: border-box; }
+      html, body { height: 100%; }
 
       body {
         min-width: 320px;
-        min-height: 100vh;
+        height: 100dvh;
         margin: 0;
+        overflow: hidden;
         color: var(--text);
         background:
           radial-gradient(circle at 8% 90%, rgba(118, 100, 65, 0.28), transparent 18rem),
           radial-gradient(circle at 90% 3%, rgba(135, 83, 67, 0.18), transparent 20rem),
           linear-gradient(135deg, #211c18 0%, #302821 45%, #241f1b 100%);
         font-family: Nunito, system-ui, sans-serif;
+        font-size: clamp(13px, 1vw + 0.6vh, 16px);
       }
 
       button, input { font: inherit; }
@@ -44,47 +47,49 @@
 
       .shell {
         display: grid;
-        grid-template-columns: 112px minmax(0, 1fr);
-        gap: 18px;
-        min-height: 100vh;
-        padding: 18px;
+        grid-template-columns: clamp(72px, 8vw, 112px) minmax(0, 1fr);
+        gap: clamp(8px, 1vw, 18px);
+        height: 100dvh;
+        padding: clamp(8px, 1.2vw, 18px);
+        overflow: hidden;
       }
 
       .sidebar {
-        position: sticky;
-        top: 18px;
-        height: calc(100vh - 36px);
+        height: 100%;
+        min-height: 0;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 24px;
-        padding: 24px 12px;
+        gap: clamp(10px, 2vh, 24px);
+        padding: clamp(12px, 2vh, 24px) 8px;
         border: 1px solid var(--line);
         border-radius: 18px;
         background: linear-gradient(180deg, rgba(74, 64, 58, 0.92), rgba(47, 41, 36, 0.94));
         box-shadow: var(--shadow);
+        overflow-y: auto;
       }
 
       .avatar {
-        width: 64px;
-        height: 64px;
+        flex: none;
+        width: clamp(44px, 4vw, 64px);
+        height: clamp(44px, 4vw, 64px);
         display: grid;
         place-items: center;
         border-radius: 50%;
         background: radial-gradient(circle at 32% 28%, #8a6a68, #50433e 68%);
         border: 1px solid rgba(237, 184, 155, 0.35);
         font-family: Gaegu, cursive;
-        font-size: 25px;
+        font-size: clamp(16px, 1.6vw, 25px);
       }
 
-      nav { width: 100%; display: grid; gap: 10px; }
+      nav { width: 100%; display: grid; gap: clamp(4px, 1vh, 10px); }
 
       .nav-item {
         display: grid;
         justify-items: center;
-        gap: 6px;
-        min-height: 72px;
-        padding: 10px 4px;
+        gap: 4px;
+        min-height: clamp(48px, 6vh, 72px);
+        padding: clamp(4px, 1vh, 10px) 4px;
         border: 1px solid transparent;
         border-radius: 12px;
         background: transparent;
@@ -97,29 +102,53 @@
         border-color: rgba(237, 184, 155, 0.28);
       }
 
-      .nav-icon { font-size: 24px; line-height: 1; }
-      .nav-item span:last-child { font-family: Gaegu, cursive; font-size: 18px; }
+      .nav-icon { font-size: clamp(16px, 1.6vw, 24px); line-height: 1; }
+      .nav-item span:last-child { font-family: Gaegu, cursive; font-size: clamp(12px, 1vw, 18px); }
 
       .dashboard {
         display: grid;
-        grid-template-columns: 1.35fr 0.88fr 1.25fr 0.86fr;
-        grid-auto-rows: minmax(205px, auto);
-        gap: 14px;
-        align-content: start;
+        grid-template-columns: 1.3fr 0.85fr 1.2fr 0.85fr;
+        grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) auto;
+        grid-template-areas:
+          "todo  today week  rail"
+          "brain focus music rail"
+          "links links links links";
+        gap: clamp(8px, 1vh, 14px);
+        height: 100%;
+        min-height: 0;
       }
+
+      .gt-todo   { grid-area: todo; }
+      .gt-today  { grid-area: today; }
+      .gt-week   { grid-area: week; }
+      .gt-rail   { grid-area: rail; display: flex; flex-direction: column; gap: clamp(6px, 1vh, 12px); min-height: 0; overflow-y: auto; }
+      .gt-brain  { grid-area: brain; }
+      .gt-focus  { grid-area: focus; }
+      .gt-music  { grid-area: music; }
+      .gt-links  { grid-area: links; }
+      .gt-settings { grid-column: 1 / 4; grid-row: 1 / 4; }
+      .gt-rail:not(:has(> :not([hidden]))) { display: none; }
 
       .panel, .weather-card, .paper-card, .mini-panel, .pinned-note {
         position: relative;
-        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
         border: 1px solid var(--line);
         border-radius: 15px;
         background: linear-gradient(150deg, rgba(255,255,255,0.035), transparent 42%), var(--panel);
         box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.05);
       }
 
-      .panel { padding: 22px; }
-      .span-2 { grid-column: span 2; }
-      .span-4 { grid-column: span 3; }
+      /* content that should never shrink away (headers, action buttons, date strips) */
+      .panel > header, .paper-head, .panel .chips, .panel .panel-action, .panel .dates {
+        flex: none;
+      }
+      .panel { padding: clamp(10px, 1.6vw, 22px); }
+      [hidden] { display: none !important; }
 
       h2, h3, p { margin: 0; }
       h2 {
@@ -210,7 +239,7 @@
       }
 
       .paper-card {
-        min-height: 500px;
+        min-height: 0;
         padding: 48px 28px 22px;
         color: #f7dec7;
         background:
@@ -302,7 +331,7 @@
       .gold { color: #d0a15c; }
 
       .weather-card {
-        min-height: 252px;
+        min-height: 0;
         padding: 26px;
         background: radial-gradient(circle at 18% 64%, rgba(204, 146, 82, 0.2), transparent 4rem), linear-gradient(150deg, rgba(51, 55, 51, 0.96), rgba(29, 32, 30, 0.96));
       }
@@ -313,6 +342,7 @@
       .weather-row { display: flex; align-items: center; gap: 18px; }
       .weather-row strong, .weather-row span, .weather-row small { display: block; }
       .weather-row strong { font-size: 24px; }
+      .weather-place { margin-top: 8px; color: var(--muted); font-family: Gaegu, cursive; font-size: 19px; }
 
       .brain-panel {
         background: radial-gradient(circle at 88% 15%, rgba(126, 136, 85, 0.18), transparent 11rem), linear-gradient(150deg, rgba(67, 78, 58, 0.9), rgba(47, 58, 45, 0.92));
@@ -348,7 +378,7 @@
       }
 
       .focus-panel {
-        min-height: 380px;
+        min-height: 0;
         background: radial-gradient(circle at 52% 49%, rgba(132, 104, 134, 0.24), transparent 10rem), linear-gradient(150deg, rgba(72, 61, 82, 0.94), rgba(55, 48, 65, 0.94));
       }
       .ghost-gear { position: absolute; right: 18px; top: 22px; }
@@ -370,7 +400,7 @@
       .mini-controls button { width: 38px; height: 34px; border: 1px solid rgba(218, 165, 103, 0.28); border-radius: 12px; background: rgba(0,0,0,0.12); color: #e8b080; }
 
       .music-panel {
-        min-height: 380px;
+        min-height: 0;
         background: radial-gradient(circle at 18% 8%, rgba(165, 97, 80, 0.18), transparent 10rem), linear-gradient(150deg, rgba(101, 62, 58, 0.94), rgba(72, 45, 48, 0.94));
       }
       .player { display: grid; grid-template-columns: 146px 1fr; align-items: center; gap: 22px; margin: 22px 0; }
@@ -401,8 +431,7 @@
       .player-controls button { border: 0; background: transparent; color: #ddb095; font-size: 26px; }
       .player-controls .play { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(180deg, #d3a079, #a76e5e); color: #1b1111; }
 
-      .right-rail { display: grid; gap: 12px; grid-row: span 2; }
-      .pinned-note { min-height: 205px; padding: 28px; transform: rotate(2deg); background: linear-gradient(120deg, #d6a85f, #c18b48); color: #24150d; font-family: Gaegu, cursive; font-size: 22px; }
+      .pinned-note { min-height: 0; padding: 28px; transform: rotate(2deg); background: linear-gradient(120deg, #d6a85f, #c18b48); color: #24150d; font-family: Gaegu, cursive; font-size: 22px; }
       .pinned-note strong { display: block; margin-bottom: 18px; font-size: 27px; }
       .mini-panel { padding: 14px; }
       .mini-panel header h2 { flex: 1; font-size: 24px; }
@@ -414,35 +443,93 @@
       .birthday span { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #6f4d69; color: #ffe1cc; font-weight: 800; }
       .birthday p { color: var(--muted); font-size: 14px; }
 
-      .links-panel { min-height: 170px; align-self: end; }
+      .links-panel { min-height: 0; }
       .link-grid { display: grid; grid-template-columns: repeat(8, minmax(78px, 1fr)); gap: 14px; margin-top: 20px; }
       .quick-link { display: grid; place-items: center; gap: 8px; min-height: 90px; border: 1px solid rgba(223,167,133,0.18); border-radius: 10px; background: rgba(255,255,255,0.04); color: #f4c5ad; }
       .quick-link strong { font-size: 28px; }
       .quick-link span { font-family: Gaegu, cursive; font-size: 18px; }
 
-      @media (max-width: 1320px) {
-        .dashboard { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-        .right-rail, .weather-card { grid-column: span 1; }
-        .span-4 { grid-column: span 3; }
+      .settings-panel {
+        min-height: 0;
+        background: radial-gradient(circle at 88% 18%, rgba(155, 112, 64, 0.18), transparent 12rem), linear-gradient(150deg, rgba(65, 55, 49, 0.94), rgba(47, 41, 36, 0.94));
       }
-      @media (max-width: 980px) {
-        .shell { grid-template-columns: 1fr; padding: 12px; }
-        .sidebar { position: static; height: auto; flex-direction: row; justify-content: flex-start; overflow-x: auto; }
-        .sidebar nav { display: flex; min-width: max-content; }
-        .nav-item { width: 74px; }
-        .dashboard { grid-template-columns: 1fr 1fr; }
-        .span-2, .span-4, .right-rail { grid-column: span 2; }
+      .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+      .settings-group { display: grid; gap: 12px; align-content: start; }
+      .settings-group label { display: grid; gap: 6px; color: #f1cfb5; font-weight: 800; }
+      .settings-group input {
+        min-width: 0;
+        padding: 11px 12px;
+        border: 1px solid rgba(224, 174, 145, 0.25);
+        border-radius: 8px;
+        background: rgba(35, 30, 27, 0.6);
+        color: var(--text);
       }
-      @media (max-width: 660px) {
-        .dashboard { grid-template-columns: 1fr; }
-        .span-2, .span-4, .right-rail { grid-column: span 1; }
-        .panel { padding: 18px; }
-        .panel-action { position: static; width: fit-content; margin: 12px 0; }
+      .settings-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+      .settings-actions button, .calendar-list button {
+        padding: 9px 13px;
+        border: 1px solid rgba(237, 153, 146, 0.3);
+        border-radius: 10px;
+        background: linear-gradient(180deg, #9b615c, #6d403d);
+        color: #ffd1c3;
+      }
+      .status-line { min-height: 22px; color: var(--muted); }
+      .calendar-list { display: grid; gap: 8px; }
+      .calendar-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px; border: 1px solid rgba(223,167,133,0.16); border-radius: 9px; background: rgba(255,255,255,0.04); }
+
+      /* ---- Medium width / early portrait: 2-column dashboard, rail becomes
+         a horizontal strip so the tall narrow column doesn't dominate ---- */
+      @media (max-width: 1180px), (orientation: portrait) {
+        .dashboard {
+          grid-template-columns: 1fr 1fr;
+          grid-template-rows: auto auto minmax(0, 1fr) auto minmax(0, 1fr) auto;
+          grid-template-areas:
+            "rail  rail"
+            "today week"
+            "todo  todo"
+            "focus music"
+            "brain brain"
+            "links links";
+        }
+        .gt-settings { grid-column: 1 / 3; grid-row: 1 / 7; }
+        .gt-rail { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; }
+        .gt-rail > * { flex: 1 1 150px; min-width: 140px; }
+      }
+
+      /* ---- Narrow portrait (tall monitor / phone width): sidebar collapses
+         to a slim top bar, dashboard drops to a single column ---- */
+      @media (max-width: 720px) {
+        .shell { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); }
+        .sidebar {
+          flex-direction: row;
+          justify-content: flex-start;
+          align-items: center;
+          height: auto;
+          width: 100%;
+          overflow-x: auto;
+          overflow-y: hidden;
+        }
+        .sidebar nav { display: flex; flex-direction: row; width: auto; min-width: max-content; }
+        .nav-item { min-height: 0; flex-direction: row; gap: 8px; padding: 8px 12px; }
+        .nav-item span:last-child { display: none; }
+
+        .dashboard {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto auto auto auto auto auto auto auto;
+          grid-template-areas:
+            "rail" "today" "week" "todo" "focus" "music" "brain" "links";
+        }
+        .gt-settings { grid-column: 1; grid-row: 1 / 9; }
+        .gt-rail { flex-direction: row; flex-wrap: wrap; overflow: visible; }
+        .gt-rail > * { flex: 1 1 130px; }
+
+        .panel { padding: 14px; }
+        .panel-action { position: static; width: fit-content; margin: 10px 0; }
         .chips { margin-left: 0; }
         .task { grid-template-columns: 18px 24px 1fr; }
         .task .tag, .task button { display: none; }
         .event-grid, .note-input, .player { grid-template-columns: 1fr; }
-        .link-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .settings-grid { grid-template-columns: 1fr; }
+        .link-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       }
     </style>
   </head>
@@ -451,20 +538,19 @@
       <aside class="sidebar" aria-label="Primary navigation">
         <div class="avatar">KM</div>
         <nav>
-          <button class="nav-item active"><span class="nav-icon">Home</span><span>Home</span></button>
-          <button class="nav-item"><span class="nav-icon">Note</span><span>Notes</span></button>
-          <button class="nav-item"><span class="nav-icon">Task</span><span>Tasks</span></button>
-          <button class="nav-item"><span class="nav-icon">Plan</span><span>Planner</span></button>
-          <button class="nav-item"><span class="nav-icon">Link</span><span>Links</span></button>
-          <button class="nav-item"><span class="nav-icon">Time</span><span>Focus</span></button>
-          <button class="nav-item"><span class="nav-icon">Song</span><span>Music</span></button>
-          <button class="nav-item"><span class="nav-icon">Gear</span><span>Settings</span></button>
+          <button class="nav-item active" data-view="home"><span class="nav-icon">🏠</span><span>Home</span></button>
+          <button class="nav-item" data-view="notes"><span class="nav-icon">📝</span><span>Notes</span></button>
+          <button class="nav-item" data-view="tasks"><span class="nav-icon">✅</span><span>Tasks</span></button>
+          <button class="nav-item" data-view="planner"><span class="nav-icon">📅</span><span>Planner</span></button>
+          <button class="nav-item" data-view="links"><span class="nav-icon">🔗</span><span>Links</span></button>
+          <button class="nav-item" data-view="music"><span class="nav-icon">🎵</span><span>Music</span></button>
+          <button class="nav-item" data-view="settings"><span class="nav-icon">⚙️</span><span>Settings</span></button>
         </nav>
       </aside>
 
       <section class="dashboard">
-        <section class="panel span-2">
-          <header><span class="title-icon">Flower</span><h2>To-Do List</h2></header>
+        <section class="panel gt-todo" data-section="tasks">
+          <header><span class="title-icon">🌷</span><h2>To-Do List</h2></header>
           <div class="panel-action">+ Add Task</div>
           <div class="chips"><button>All</button><button>Work</button><button>Personal</button><button>Health</button><button>Other</button></div>
           <div class="task"><span class="drag">::</span><span class="box"></span><span class="task-text">Reply to important emails</span><span class="tag work">Work</span><button>Edit</button><button>x</button></div>
@@ -477,24 +563,24 @@
           <button class="inline-add">+ Add new task</button>
         </section>
 
-        <section class="paper-card">
+        <section class="paper-card gt-today" data-section="tasks">
           <div class="binder"></div>
-          <div class="paper-head"><h2>Today Heart</h2><button>+ Add</button></div>
+          <div class="paper-head"><h2><span class="title-icon">💗</span>Today</h2><button>+ Add</button></div>
           <div class="paper-row"><span>&#9675;</span><span>Client call at 11am</span></div>
           <div class="paper-row complete"><span>&#10003;</span><span>Finish stream overlay</span></div>
           <div class="paper-row"><span>&#9675;</span><span>Take meds</span></div>
           <div class="paper-row"><span>&#9675;</span><span>Walk Luna</span></div>
-          <div class="cat">o o</div>
+          <div class="cat">•ᴥ•</div>
           <div class="sticky">You have got this!</div>
         </section>
 
-        <section class="panel span-2">
-          <header><span class="title-icon">Cal</span><h2>Week at a Glance</h2></header>
+        <section class="panel gt-week" data-section="planner">
+          <header><span class="title-icon">📅</span><h2>Week at a Glance</h2></header>
           <div class="panel-action">+ Add Event</div>
           <div class="dates">
             <div class="date"><span>MON</span><strong>11</strong></div><div class="date"><span>TUE</span><strong>12</strong></div><div class="date active"><span>WED</span><strong>13</strong></div><div class="date"><span>THU</span><strong>14</strong></div><div class="date"><span>FRI</span><strong>15</strong></div><div class="date"><span>SAT</span><strong>16</strong></div><div class="date"><span>SUN</span><strong>17</strong></div>
           </div>
-          <div class="event-grid">
+          <div class="event-grid" id="eventGrid">
             <article class="event-card lavender"><div><span class="dot"></span>Team Meeting</div><time>10:00 AM</time></article>
             <article class="event-card green"><div>Game Stream Night</div><time>7:00 PM</time></article>
             <article class="event-card rose"><div><span class="dot"></span>Dentist Appointment</div><time>2:30 PM</time></article>
@@ -503,15 +589,22 @@
           <button class="view-week">View full week</button>
         </section>
 
-        <section class="weather-card">
-          <div class="time" id="clock">10:24<span>AM</span></div>
-          <div class="date-line">WED, MAY 13</div>
-          <div class="weather-divider"></div>
-          <div class="weather-row"><strong>Sun</strong><div><strong>18 C</strong><span>Partly Cloudy</span><small>Feels like 18</small></div></div>
-        </section>
+        <div class="gt-rail">
+          <section class="weather-card" data-section="home settings">
+            <div class="time" id="clock">10:24<span>AM</span></div>
+            <div class="date-line">WED, MAY 13</div>
+            <div class="weather-place" id="weatherPlace">Set area in Settings</div>
+            <div class="weather-divider"></div>
+            <div class="weather-row"><strong id="weatherIcon">☀️</strong><div><strong id="weatherTemp">-- C</strong><span id="weatherDesc">Met Office weather</span><small id="weatherFeels">Add API key and area</small></div></div>
+          </section>
+          <section class="pinned-note" data-section="notes"><strong>💌 Quick Note</strong><p>Do not forget to be proud of how far you have come</p></section>
+          <section class="mini-panel" data-section="planner"><header><span class="title-icon">⚙️</span><h2>Active CC LOAs</h2><button>+</button></header><article class="info-line"><span class="badge">1</span><div><strong>Kaida</strong><p>May 10 - May 24</p><small>Returns May 25</small></div></article></section>
+          <section class="mini-panel" data-section="planner"><header><span class="title-icon">📅</span><h2>Next Stream</h2><button>Edit</button></header><article class="info-line"><span class="badge">🎮</span><div><strong>Highlife RP</strong><p>May 16, 2025</p><small>7:00 PM BST</small></div></article></section>
+          <section class="mini-panel" data-section="planner"><header><span class="title-icon">🎂</span><h2>Upcoming Birthdays</h2><button>+</button></header><div class="birthday"><span>M</span><p>Mira May 15 in 2d</p></div><div class="birthday"><span>L</span><p>Luna May 20 in 7d</p></div><div class="birthday"><span>A</span><p>Ash May 28 in 15d</p></div></section>
+        </div>
 
-        <section class="panel brain-panel span-2">
-          <header><span class="title-icon">Plant</span><h2>Brain Dump</h2></header>
+        <section class="panel brain-panel gt-brain" data-section="notes tasks">
+          <header><span class="title-icon">☁️</span><h2>Brain Dump</h2></header>
           <div class="note-input"><input placeholder="Type something..." /><button>Add</button></div>
           <div class="dump-row"><span class="mini-drag">:</span><span>Idea: cozy Minecraft build new cottagecore area</span><time>Today</time></div>
           <div class="dump-row"><span class="mini-drag">:</span><span>Check out new lo-fi playlist</span><time>Today</time></div>
@@ -521,18 +614,40 @@
           <div class="brain-actions"><button>To-Do</button><button>Clear All</button></div>
         </section>
 
-        <section class="panel focus-panel">
-          <header><span class="title-icon">Plant</span><h2>Focus Timer</h2></header>
-          <button class="ghost-gear">Gear</button>
+        <section class="panel focus-panel gt-focus" data-section="home">
+          <header><span class="title-icon">🌿</span><h2>Focus Timer</h2></header>
+          <button class="ghost-gear" aria-label="Timer settings">⚙️</button>
           <div class="segments"><button class="selected">Focus</button><button>Short Break</button></div>
-          <div class="timer-ring" style="--progress: 360deg"><span id="timer">25:00</span></div>
-          <button class="start" id="timerButton">Start</button>
-          <div class="mini-controls"><button id="resetTimer">Reset</button><button>Song</button></div>
+          <div class="timer-ring" style="--progress: 68%"><span>25:00</span></div>
+          <button class="start">Start</button>
+          <div class="mini-controls"><button aria-label="Reset">↺</button><button aria-label="Expand">⛶</button></div>
         </section>
 
-        <section class="panel music-panel span-2">
-          <header><span class="title-icon">Song</span><h2>Now Playing</h2></header>
-          <button class="ghost-gear">More</button>
+        <section class="panel settings-panel gt-settings" data-section="settings" hidden>
+          <header><span class="title-icon">⚙️</span><h2>Settings</h2></header>
+          <div class="settings-grid">
+            <form class="settings-group" id="weatherForm">
+              <h3>Weather</h3>
+              <label>Area name<input id="areaName" placeholder="Example: Cardiff" /></label>
+              <label>Latitude<input id="latitude" placeholder="51.4816" /></label>
+              <label>Longitude<input id="longitude" placeholder="-3.1791" /></label>
+              <label>Met Office API key<input id="metKey" type="password" placeholder="DataHub key" /></label>
+              <div class="settings-actions"><button type="submit">Save Weather</button></div>
+              <p class="status-line" id="weatherStatus"></p>
+            </form>
+            <form class="settings-group" id="calendarForm">
+              <h3>Calendars</h3>
+              <label>Calendar name<input id="calendarName" placeholder="Stream calendar" /></label>
+              <label>ICS URL<input id="calendarUrl" placeholder="https://..." /></label>
+              <div class="settings-actions"><button type="submit">Add Calendar</button></div>
+              <div class="calendar-list" id="calendarList"></div>
+            </form>
+          </div>
+        </section>
+
+        <section class="panel music-panel gt-music" data-section="music">
+          <header><span class="title-icon">🎵</span><h2>Now Playing</h2></header>
+          <button class="ghost-gear" aria-label="More options">⋮</button>
           <div class="player">
             <div class="cozy-art"><span class="window"></span><span class="lamp"></span><span class="desk-line"></span><span class="notebook"></span></div>
             <div><h3 id="songTitle">No song playing</h3><p id="songText">Play something you love</p></div>
@@ -541,15 +656,8 @@
           <div class="player-controls"><button>Back</button><button class="play" id="playButton">Play</button><button>Next</button></div>
         </section>
 
-        <aside class="right-rail">
-          <section class="pinned-note"><strong>Quick Note</strong><p>Do not forget to be proud of how far you have come</p></section>
-          <section class="mini-panel"><header><span>Gear</span><h2>Active CC LOAs</h2><button>+</button></header><article class="info-line"><span class="badge">1</span><div><strong>Kaida</strong><p>May 10 - May 24</p><small>Returns May 25</small></div></article></section>
-          <section class="mini-panel"><header><span>Cal</span><h2>Next Stream</h2><button>Edit</button></header><article class="info-line"><span class="badge">Game</span><div><strong>Highlife RP</strong><p>May 16, 2025</p><small>7:00 PM BST</small></div></article></section>
-          <section class="mini-panel"><header><span>Cake</span><h2>Upcoming Birthdays</h2><button>+</button></header><div class="birthday"><span>M</span><p>Mira May 15 in 2d</p></div><div class="birthday"><span>L</span><p>Luna May 20 in 7d</p></div><div class="birthday"><span>A</span><p>Ash May 28 in 15d</p></div></section>
-        </aside>
-
-        <section class="panel links-panel span-4">
-          <header><span class="title-icon">Link</span><h2>Quick Links</h2></header>
+        <section class="panel links-panel gt-links" data-section="home links">
+          <header><span class="title-icon">📌</span><h2>Quick Links</h2></header>
           <div class="link-grid">
             <button class="quick-link"><strong>M</strong><span>Gmail</span></button><button class="quick-link"><strong>N</strong><span>Notion</span></button><button class="quick-link"><strong>T</strong><span>Twitch</span></button><button class="quick-link"><strong>C</strong><span>Canva</span></button><button class="quick-link"><strong>D</strong><span>Discord</span></button><button class="quick-link"><strong>G</strong><span>Drive</span></button><button class="quick-link"><strong>Y</strong><span>YouTube</span></button><button class="quick-link"><strong>AI</strong><span>ChatGPT</span></button>
           </div>
@@ -559,48 +667,30 @@
 
     <script>
       const clock = document.getElementById("clock");
-      const timer = document.getElementById("timer");
-      const timerButton = document.getElementById("timerButton");
-      const resetTimer = document.getElementById("resetTimer");
       const playButton = document.getElementById("playButton");
       const songTitle = document.getElementById("songTitle");
       const songText = document.getElementById("songText");
       const songTrack = document.getElementById("songTrack");
-      let seconds = 1500;
-      let running = false;
       let playing = false;
+      const weatherFields = {
+        area: document.getElementById("areaName"),
+        lat: document.getElementById("latitude"),
+        lon: document.getElementById("longitude"),
+        key: document.getElementById("metKey")
+      };
+      const weatherStatus = document.getElementById("weatherStatus");
+      const calendarList = document.getElementById("calendarList");
+      const eventGrid = document.getElementById("eventGrid");
+      const sampleEvents = eventGrid.innerHTML;
 
-      setInterval(() => {
+      const updateClock = () => {
         const now = new Date();
         const time = now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
         const suffix = now.getHours() >= 12 ? "PM" : "AM";
         clock.innerHTML = `${time}<span>${suffix}</span>`;
-      }, 1000);
-
-      setInterval(() => {
-        if (!running) return;
-        seconds -= 1;
-        if (seconds <= 0) {
-          seconds = 1500;
-          running = false;
-          timerButton.textContent = "Start";
-        }
-        const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
-        const secs = String(seconds % 60).padStart(2, "0");
-        timer.textContent = `${mins}:${secs}`;
-      }, 1000);
-
-      timerButton.addEventListener("click", () => {
-        running = !running;
-        timerButton.textContent = running ? "Pause" : "Start";
-      });
-
-      resetTimer.addEventListener("click", () => {
-        seconds = 1500;
-        running = false;
-        timer.textContent = "25:00";
-        timerButton.textContent = "Start";
-      });
+      };
+      updateClock();
+      setInterval(updateClock, 1000);
 
       playButton.addEventListener("click", () => {
         playing = !playing;
@@ -609,6 +699,162 @@
         songText.textContent = playing ? "Lo-fi focus mix" : "Play something you love";
         songTrack.style.width = playing ? "42%" : "18%";
       });
+
+      document.querySelectorAll(".nav-item").forEach((button) => {
+        button.addEventListener("click", () => {
+          const view = button.dataset.view;
+          document.querySelectorAll(".nav-item").forEach((item) => item.classList.toggle("active", item === button));
+          document.querySelectorAll("[data-section]").forEach((section) => {
+            const sections = section.dataset.section.split(" ");
+            section.hidden = view === "home" ? sections.includes("settings") : !sections.includes(view);
+          });
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+      });
+
+      const weatherCode = {
+        0: ["☀️", "Clear"], 1: ["🌤️", "Sunny"], 2: ["⛅", "Partly cloudy"], 3: ["☁️", "Cloudy"],
+        5: ["🌫️", "Mist"], 6: ["🌁", "Fog"], 7: ["☁️", "Cloudy"], 8: ["🌦️", "Rain shower"],
+        9: ["🌧️", "Light rain"], 10: ["🌧️", "Heavy rain"], 11: ["⛈️", "Thunder"], 12: ["🌨️", "Sleet"],
+        13: ["❄️", "Snow"], 14: ["🌧️", "Heavy shower"], 15: ["🌧️", "Heavy rain"], 16: ["🌨️", "Sleet shower"],
+        17: ["🌨️", "Snow shower"], 18: ["❄️", "Heavy snow"], 19: ["⛈️", "Thunder shower"], 20: ["⛈️", "Thunder"]
+      };
+
+      function readSettings() {
+        return JSON.parse(localStorage.getItem("homebaseSettings") || "{\"weather\":{},\"calendars\":[]}");
+      }
+
+      function writeSettings(settings) {
+        localStorage.setItem("homebaseSettings", JSON.stringify(settings));
+      }
+
+      function fillSettings() {
+        const settings = readSettings();
+        weatherFields.area.value = settings.weather.area || "";
+        weatherFields.lat.value = settings.weather.lat || "";
+        weatherFields.lon.value = settings.weather.lon || "";
+        weatherFields.key.value = settings.weather.key || "";
+        document.getElementById("weatherPlace").textContent = settings.weather.area || "Set area in Settings";
+        calendarList.innerHTML = "";
+        settings.calendars.forEach((cal, index) => {
+          const row = document.createElement("div");
+          row.className = "calendar-row";
+          row.innerHTML = `<span>${cal.name}</span><button type="button" data-remove="${index}">Remove</button>`;
+          calendarList.appendChild(row);
+        });
+      }
+
+      function parseIcs(text, sourceName) {
+        const lines = text.replace(/\r/g, "").split("\n");
+        const events = [];
+        let event = null;
+        lines.forEach((line) => {
+          if (line === "BEGIN:VEVENT") event = {};
+          if (!event) return;
+          if (line.startsWith("SUMMARY")) event.summary = line.split(":").slice(1).join(":");
+          if (line.startsWith("DTSTART")) event.start = line.split(":").slice(1).join(":");
+          if (line === "END:VEVENT") {
+            if (event.summary && event.start) events.push({ ...event, sourceName });
+            event = null;
+          }
+        });
+        return events;
+      }
+
+      function formatIcsDate(value) {
+        const clean = value.replace("Z", "");
+        const date = clean.length === 8
+          ? new Date(`${clean.slice(0, 4)}-${clean.slice(4, 6)}-${clean.slice(6, 8)}T09:00:00`)
+          : new Date(`${clean.slice(0, 4)}-${clean.slice(4, 6)}-${clean.slice(6, 8)}T${clean.slice(9, 11)}:${clean.slice(11, 13)}:00`);
+        return Number.isNaN(date.getTime()) ? "Upcoming" : date.toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" });
+      }
+
+      async function loadCalendars() {
+        const calendars = readSettings().calendars;
+        if (!calendars.length) {
+          eventGrid.innerHTML = sampleEvents;
+          return;
+        }
+        const pulled = [];
+        for (const calendar of calendars) {
+          try {
+            const response = await fetch(calendar.url);
+            if (!response.ok) throw new Error("Calendar unavailable");
+            pulled.push(...parseIcs(await response.text(), calendar.name));
+          } catch (error) {
+            pulled.push({ summary: `${calendar.name} unavailable`, start: "", sourceName: calendar.name });
+          }
+        }
+        const upcoming = pulled.slice(0, 4);
+        eventGrid.innerHTML = upcoming.map((event, index) => `
+          <article class="event-card ${["lavender", "green", "rose", "gold"][index % 4]}">
+            <div><span class="dot"></span>${event.summary}</div>
+            <time>${event.start ? formatIcsDate(event.start) : "Check calendar URL"}</time>
+          </article>
+        `).join("") || sampleEvents;
+      }
+
+      async function fetchMetWeather() {
+        const settings = readSettings().weather;
+        document.getElementById("weatherPlace").textContent = settings.area || "Set area in Settings";
+        if (!settings.key || !settings.lat || !settings.lon) return;
+        weatherStatus.textContent = "Checking Met Office...";
+        const url = `https://data.hub.api.metoffice.gov.uk/sitespecific/v0/point/hourly?datasource=BD1&includeLocationName=true&latitude=${encodeURIComponent(settings.lat)}&longitude=${encodeURIComponent(settings.lon)}&excludeParameterMetadata=true`;
+        try {
+          const response = await fetch(url, { headers: { apikey: settings.key } });
+          if (!response.ok) throw new Error("Met Office request failed");
+          const data = await response.json();
+          const now = data.features?.[0]?.properties?.timeSeries?.[0];
+          const code = weatherCode[now?.significantWeatherCode] || ["Cloud", "Weather"];
+          document.getElementById("weatherIcon").textContent = code[0];
+          document.getElementById("weatherTemp").textContent = `${Math.round(now.screenTemperature)} C`;
+          document.getElementById("weatherDesc").textContent = code[1];
+          document.getElementById("weatherFeels").textContent = `Feels like ${Math.round(now.feelsLikeTemperature)} C`;
+          weatherStatus.textContent = "Weather saved";
+        } catch (error) {
+          weatherStatus.textContent = "Could not load Met Office weather";
+        }
+      }
+
+      document.getElementById("weatherForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const settings = readSettings();
+        settings.weather = {
+          area: weatherFields.area.value.trim(),
+          lat: weatherFields.lat.value.trim(),
+          lon: weatherFields.lon.value.trim(),
+          key: weatherFields.key.value.trim()
+        };
+        writeSettings(settings);
+        fillSettings();
+        fetchMetWeather();
+      });
+
+      document.getElementById("calendarForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const settings = readSettings();
+        const name = document.getElementById("calendarName").value.trim();
+        const url = document.getElementById("calendarUrl").value.trim();
+        if (name && url) settings.calendars.push({ name, url });
+        writeSettings(settings);
+        event.target.reset();
+        fillSettings();
+        loadCalendars();
+      });
+
+      calendarList.addEventListener("click", (event) => {
+        const remove = event.target.dataset.remove;
+        if (remove === undefined) return;
+        const settings = readSettings();
+        settings.calendars.splice(Number(remove), 1);
+        writeSettings(settings);
+        fillSettings();
+        loadCalendars();
+      });
+
+      fillSettings();
+      fetchMetWeather();
+      loadCalendars();
     </script>
   </body>
 </html>
