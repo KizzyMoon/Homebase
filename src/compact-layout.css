@@ -1,65 +1,68 @@
-/* Compact, breathable dashboard overrides. */
+/* Spacious, responsive dashboard overrides. */
 .dashboard-grid .brain-card{display:none!important}
-.home-links-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px 12px!important;margin-top:10px!important;align-items:start}
-.home-links-grid a{min-width:0!important;text-decoration:none!important;color:#ecd8d1!important;border:0!important;background:transparent!important;border-radius:0!important;padding:5px 3px!important;display:grid!important;justify-items:center!important;gap:5px!important;text-align:center!important;box-shadow:none!important;transition:transform .15s ease,opacity .15s ease!important}
+.home-links-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px 16px!important;margin-top:14px!important;align-items:start}
+.home-links-grid a{min-width:0!important;text-decoration:none!important;color:#ecd8d1!important;border:0!important;background:transparent!important;border-radius:0!important;padding:6px 3px!important;display:grid!important;justify-items:center!important;gap:6px!important;text-align:center!important;box-shadow:none!important;transition:transform .15s ease,opacity .15s ease!important}
 .home-links-grid a:hover{border:0!important;background:transparent!important;transform:translateY(-2px)!important;opacity:.82!important}
-.home-links-grid .site-icon{width:30px!important;height:30px!important;border:0!important;background:transparent!important;border-radius:0!important;box-shadow:none!important;display:grid!important;place-items:center!important}
-.home-links-grid .site-icon img{width:24px!important;height:24px!important;object-fit:contain!important}
-.home-links-grid a>span:last-child{font-size:11px!important;line-height:1.15!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important}
+.home-links-grid .site-icon{width:32px!important;height:32px!important;border:0!important;background:transparent!important;border-radius:0!important;box-shadow:none!important;display:grid!important;place-items:center!important}
+.home-links-grid .site-icon img{width:25px!important;height:25px!important;object-fit:contain!important}
+.home-links-grid a>span:last-child{font-size:11px!important;line-height:1.2!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important}
 
-/* Wide desktop: natural card heights, no forced full-screen stretching. */
+/* Wide desktop: roomy cards without stretching to fill the whole viewport. */
 @media (min-width:1181px){
-  .page-shell{height:auto!important;min-height:calc(100vh - 16px)!important;overflow:visible!important}
+  .page-shell{height:auto!important;min-height:calc(100vh - 16px)!important;overflow:visible!important;padding-bottom:24px!important}
   .dashboard-grid{
     height:auto!important;
     min-height:0!important;
-    grid-template-columns:1fr 1fr 1.1fr 1.1fr .95fr 1.1fr 1.1fr!important;
+    grid-template-columns:repeat(12,minmax(0,1fr))!important;
     grid-template-areas:
-      "clock clock todo todo todo week week"
-      "links links birthdays loa warnings music music"!important;
-    grid-template-rows:auto auto!important;
-    gap:14px!important;
-    align-items:start!important
+      "clock clock clock todo todo todo todo todo week week week week"
+      "links links links birthdays birthdays loa loa warnings warnings music music music"!important;
+    grid-template-rows:minmax(180px,32vh) minmax(190px,38vh)!important;
+    gap:16px!important;
+    align-items:stretch!important
   }
 
-  .clock-card{grid-area:clock!important;height:auto!important;align-self:start!important}
+  .clock-card{grid-area:clock!important;height:auto!important;align-self:stretch!important}
   .todo-card{grid-area:todo!important;height:auto!important;min-height:0!important}
   .week-card{grid-area:week!important;height:auto!important;min-height:0!important}
   .birthdays-card{grid-area:birthdays!important;height:auto!important;min-height:0!important}
   .loa-card{grid-area:loa!important;height:auto!important;min-height:0!important}
   .warnings-card{grid-area:warnings!important;height:auto!important;min-height:0!important}
   .music-card{grid-area:music!important;height:auto!important;min-height:0!important;min-width:0!important;overflow:hidden!important}
-  .home-links-card{grid-area:links!important;height:auto!important;min-height:0!important;align-self:start!important;overflow:visible!important}
+  .home-links-card{grid-area:links!important;height:auto!important;min-height:0!important;align-self:stretch!important;overflow:visible!important}
 
-  .panel{padding:14px!important}.panel h2{font-size:14px!important}.panel header{min-height:24px!important}.panel header button{font-size:12px!important}
-  .task-row{min-height:32px!important}.task-text{font-size:12px!important}
-  .week-events{gap:6px!important;margin-top:8px!important}.week-event{min-height:31px!important;padding:5px 8px!important}.week-event span,.week-event strong{font-size:10px!important}
-  .person-row{min-height:40px!important}.cc-card{padding:12px!important}.cc-list{gap:6px!important;margin-top:8px!important;overflow:visible!important}.cc-row{min-height:44px!important;padding:5px 7px!important}.cc-footer{padding-top:7px!important;margin-top:7px!important}.empty-state{padding:12px 6px!important}
+  .panel{padding:18px!important}.panel h2{font-size:15px!important}.panel header{min-height:28px!important}.panel header button{font-size:12px!important}
+  .task-list{margin-top:8px!important}.task-row{min-height:38px!important}.task-text{font-size:13px!important}
+  .week-events{gap:8px!important;margin-top:12px!important}.week-event{min-height:38px!important;padding:8px 10px!important}.week-event span,.week-event strong{font-size:11px!important}
+  .people-list{margin-top:12px!important}.person-row{min-height:46px!important}.cc-card{padding:16px!important}.cc-list{gap:8px!important;margin-top:12px!important;overflow:auto!important}.cc-row{min-height:50px!important;padding:8px 9px!important}.cc-footer{padding-top:10px!important;margin-top:10px!important}.empty-state{padding:22px 8px!important;line-height:1.5!important}
 
-  .clock-card{padding:14px!important}.day-script{font-size:20px!important}.big-time{font-size:43px!important;margin:7px 0 2px!important}.date-label{font-size:14px!important}.divider{margin:9px 0!important}.weather-emoji{font-size:30px!important}.weather-line{gap:9px!important}.weather-line strong{font-size:20px!important}.weather-line span{font-size:12px!important}.weather-line small{font-size:9px!important}.weather-meta{margin:3px 0 0 41px!important;font-size:9px!important}
+  .clock-card{padding:18px!important}.day-script{font-size:22px!important}.big-time{font-size:48px!important;margin:10px 0 4px!important}.date-label{font-size:15px!important}.divider{margin:12px 0!important}.weather-emoji{font-size:34px!important}.weather-line{gap:11px!important}.weather-line strong{font-size:22px!important}.weather-line span{font-size:13px!important}.weather-line small{font-size:10px!important}.weather-meta{margin:5px 0 0 46px!important;font-size:10px!important}
 
-  /* Quick links stays compact directly under date/weather. */
-  .home-links-card{padding:12px 14px!important}
-  .home-links-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px 8px!important;margin-top:10px!important}
-  .home-links-grid a{padding:2px 1px!important;gap:3px!important}
-  .home-links-grid .site-icon{width:26px!important;height:26px!important}
-  .home-links-grid .site-icon img{width:21px!important;height:21px!important}
-  .home-links-grid a>span:last-child{font-size:10px!important}
+  /* Quick Links sits comfortably below date/weather instead of being a tall skinny column. */
+  .home-links-card{padding:16px 18px!important}
+  .home-links-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:14px 12px!important;margin-top:14px!important}
 
-  /* Now Playing is compact and contained beside warnings. */
-  .music-card{padding:12px 14px!important}
-  .music-main{margin-top:6px!important;grid-template-columns:88px minmax(0,1fr)!important;gap:12px!important;min-width:0!important}
-  .album-art,.album-image{width:88px!important;height:88px!important;max-width:88px!important;max-height:88px!important}
-  .music-info{min-width:0!important;overflow:hidden!important}
-  .music-info h3,.music-info p{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
-  .progress{margin:6px 0 0 100px!important;width:calc(100% - 100px)!important;max-width:calc(100% - 100px)!important}
-  .timecodes{margin:2px 0 0 100px!important;width:calc(100% - 100px)!important;max-width:calc(100% - 100px)!important}
-  .controls{margin-top:2px!important;gap:12px!important;justify-content:center!important;flex-wrap:nowrap!important}.controls .play{width:36px!important;height:36px!important;flex:none!important}
+  /* Now Playing has enough width and padding to keep every control inside its card. */
+  .music-card{padding:16px 18px!important}
+  .music-main{margin-top:10px!important;grid-template-columns:96px minmax(0,1fr)!important;gap:14px!important;min-width:0!important}
+  .album-art,.album-image{width:96px!important;height:96px!important;max-width:96px!important;max-height:96px!important}
+  .song-info,.music-info{min-width:0!important;overflow:hidden!important}.song-info strong,.song-info span,.music-info h3,.music-info p{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+  .progress{margin:10px 0 0 110px!important;width:calc(100% - 110px)!important;max-width:calc(100% - 110px)!important}
+  .timecodes{margin:4px 0 0 110px!important;width:calc(100% - 110px)!important;max-width:calc(100% - 110px)!important}
+  .controls{margin-top:8px!important;gap:16px!important;justify-content:center!important;flex-wrap:nowrap!important}.controls .play{width:40px!important;height:40px!important;flex:none!important}
 }
 
-/* Portrait / narrow desktop: breathable two-column flow. */
+/* Short landscape screens: retain breathing room, but scale sensibly. */
+@media (min-width:1181px) and (max-height:650px){
+  .dashboard-grid{grid-template-rows:minmax(170px,42vh) minmax(180px,44vh)!important;gap:14px!important}
+  .panel{padding:15px!important}.clock-card{padding:15px!important}.big-time{font-size:44px!important}
+  .home-links-grid{gap:10px 10px!important;margin-top:10px!important}
+  .music-card{padding:14px 16px!important}.music-main{grid-template-columns:82px minmax(0,1fr)!important}.album-art,.album-image{width:82px!important;height:82px!important}.progress,.timecodes{margin-left:96px!important;width:calc(100% - 96px)!important;max-width:calc(100% - 96px)!important}
+}
+
+/* Portrait / narrow desktop: spacious two-column flow. */
 @media (min-width:821px) and (max-width:1180px){
-  .page-shell{height:auto!important;overflow:visible!important}
+  .page-shell{height:auto!important;overflow:visible!important;padding-bottom:24px!important}
   .dashboard-grid{
     grid-template-columns:1fr 1fr!important;
     grid-template-areas:
@@ -68,14 +71,14 @@
       "birthdays loa"
       "warnings music"!important;
     grid-template-rows:auto auto auto auto!important;
-    gap:12px!important;
+    gap:16px!important;
     height:auto!important;
     min-height:0!important;
     align-items:start!important
   }
   .clock-card{grid-area:clock!important}.todo-card{grid-area:todo!important}.week-card{grid-area:week!important}.birthdays-card{grid-area:birthdays!important}.loa-card{grid-area:loa!important}.warnings-card{grid-area:warnings!important}.home-links-card{grid-area:links!important;align-self:start!important;height:auto!important}.music-card{grid-area:music!important;align-self:start!important;height:auto!important;min-width:0!important;overflow:hidden!important}
-  .home-links-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
-  .music-main{grid-template-columns:84px minmax(0,1fr)!important;gap:10px!important}.album-art,.album-image{width:84px!important;height:84px!important}.progress,.timecodes{margin-left:94px!important;width:calc(100% - 94px)!important}
+  .panel{padding:16px!important}.home-links-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px 10px!important}
+  .music-main{grid-template-columns:88px minmax(0,1fr)!important;gap:12px!important}.album-art,.album-image{width:88px!important;height:88px!important}.progress,.timecodes{margin-left:100px!important;width:calc(100% - 100px)!important;max-width:calc(100% - 100px)!important}
 }
 
 @media (max-width:820px){
