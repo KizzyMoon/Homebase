@@ -21,11 +21,11 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
 
-// Firestore's REST API uses `(default)` for the project's default database.
-// A missing user document is also returned as HTTP 404, so 404 must NOT be
-// interpreted as "the database does not exist". We seed the document instead.
 const FIRESTORE_DATABASE_ID = "(default)";
 const FIRESTORE_BASE = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/${encodeURIComponent(FIRESTORE_DATABASE_ID)}/documents/users`;
+const POLL_INTERVAL_MS = 20000;
+const REQUEST_TIMEOUT_MS = 12000;
+const MAX_TRANSIENT_FAILURES = 2;
 
 const SYNC_KEYS = [
   "homebase.tasks",
@@ -42,6 +42,7 @@ const originalSetItem = Storage.prototype.setItem;
 const deviceIdKey = "homebase.firebase.deviceId";
 const cloudLoadedKey = "homebase.firebase.cloudLoadedUid";
 const cloudVersionKey = "homebase.firebase.cloudVersion";
+const lastSuccessKey = "homebase.firebase.lastSuccess";
 const deviceId = sessionStorage.getItem(deviceIdKey) || crypto.randomUUID();
 sessionStorage.setItem(deviceIdKey, deviceId);
 
@@ -51,6 +52,7 @@ let suppressLocalSync = false;
 let requestInFlight = false;
 let saveTimer = null;
 let pollTimer = null;
+let consecutiveFailures = 0;
 
 function documentUrl() {
   return `${FIRESTORE_BASE}/${encodeURIComponent(currentUser.uid)}`;
@@ -92,9 +94,7 @@ function decodeFirestoreValue(value) {
   if ("arrayValue" in value) return (value.arrayValue?.values || []).map(decodeFirestoreValue);
   if ("mapValue" in value) {
     const result = {};
-    for (const [key, child] of Object.entries(value.mapValue?.fields || {})) {
-      result[key] = decodeFirestoreValue(child);
-    }
+    for (const [key, child] of Object.entries(value.mapValue?.fields || {})) result[key] = decodeFirestoreValue(child);
     return result;
   }
   return null;
@@ -115,13 +115,10 @@ function decodeDocument(raw) {
   };
 }
 
-async function authHeaders() {
+async function authHeaders(forceRefresh = false) {
   if (!currentUser) throw Object.assign(new Error("No signed-in Firebase user"), { code: "UNAUTHENTICATED" });
-  const token = await currentUser.getIdToken();
-  return {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json"
-  };
+  const token = await currentUser.getIdToken(forceRefresh);
+  return { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
 }
 
 async function firestoreError(response) {
@@ -132,7 +129,7 @@ async function firestoreError(response) {
     code = body?.error?.status || code;
     message = body?.error?.message || message;
   } catch {}
-  return Object.assign(new Error(message), { code });
+  return Object.assign(new Error(message), { code, httpStatus: response.status });
 }
 
 function errorInfo(error) {
@@ -141,23 +138,50 @@ function errorInfo(error) {
   return { short: `Sync error · ${code}`, detail: message };
 }
 
-async function readCloudDocument() {
-  const headers = await authHeaders();
-  const response = await fetch(documentUrl(), {
-    method: "GET",
+async function fetchWithTimeout(url, options = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (error) {
+    if (error?.name === "AbortError") throw Object.assign(new Error("Firestore request timed out"), { code: "TIMEOUT" });
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function firestoreRequest(method, body) {
+  let headers = await authHeaders(false);
+  let response = await fetchWithTimeout(documentUrl(), {
+    method,
     headers,
+    body: body ? JSON.stringify(body) : undefined,
     cache: "no-store"
   });
 
-  // This is the normal state on first use: the database exists but the user's
-  // /users/{uid} document has not been created yet.
+  // A stale Firebase ID token can surface as 401/UNAUTHENTICATED. Force-refresh
+  // the token once before treating it as a real sync failure.
+  if (response.status === 401) {
+    headers = await authHeaders(true);
+    response = await fetchWithTimeout(documentUrl(), {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+      cache: "no-store"
+    });
+  }
+  return response;
+}
+
+async function readCloudDocument() {
+  const response = await firestoreRequest("GET");
   if (response.status === 404) return null;
   if (!response.ok) throw await firestoreError(response);
   return decodeDocument(await response.json());
 }
 
 async function writeCloudDocument() {
-  const headers = await authHeaders();
   const clientUpdatedAt = Date.now();
   const payload = {
     fields: {
@@ -170,17 +194,10 @@ async function writeCloudDocument() {
       updatedBy: { stringValue: deviceId }
     }
   };
-
-  // PATCH on a document path performs an upsert in the Firestore REST API.
-  const response = await fetch(documentUrl(), {
-    method: "PATCH",
-    headers,
-    body: JSON.stringify(payload),
-    cache: "no-store"
-  });
+  const response = await firestoreRequest("PATCH", payload);
   if (!response.ok) throw await firestoreError(response);
-
   sessionStorage.setItem(cloudVersionKey, String(clientUpdatedAt));
+  markSyncSuccess();
   return clientUpdatedAt;
 }
 
@@ -192,6 +209,32 @@ function setSyncStatus(text, state = "", detail = "") {
   status.title = detail || text;
 }
 
+function markSyncSuccess() {
+  consecutiveFailures = 0;
+  const stamp = Date.now();
+  sessionStorage.setItem(lastSuccessKey, String(stamp));
+  return stamp;
+}
+
+function handleSyncFailure(error, context) {
+  consecutiveFailures += 1;
+  const info = errorInfo(error);
+  console.error(`Homebase cloud ${context} failed (${consecutiveFailures}):`, error);
+
+  // One-off network hiccups should not turn a healthy sync badge red. We keep
+  // the last-known-good state and retry on the next poll. Persistent failures
+  // are surfaced with the exact Firestore error in the tooltip.
+  if (consecutiveFailures <= MAX_TRANSIENT_FAILURES) {
+    const lastSuccess = Number(sessionStorage.getItem(lastSuccessKey) || 0);
+    if (lastSuccess) {
+      const secondsAgo = Math.max(0, Math.round((Date.now() - lastSuccess) / 1000));
+      setSyncStatus("Synced · retrying", "busy", `${info.detail} · Last successful sync ${secondsAgo}s ago`);
+      return;
+    }
+  }
+  setSyncStatus(info.short, "error", `${info.detail} · ${context} · failure ${consecutiveFailures}`);
+}
+
 async function saveDashboardToCloud() {
   if (!currentUser || !readyToSync || requestInFlight) return;
   requestInFlight = true;
@@ -200,9 +243,7 @@ async function saveDashboardToCloud() {
     await writeCloudDocument();
     setSyncStatus("Synced", "ok", "Cloud sync active · Firestore (default)");
   } catch (error) {
-    console.error("Homebase cloud save failed:", error);
-    const info = errorInfo(error);
-    setSyncStatus(info.short, "error", info.detail);
+    handleSyncFailure(error, "save");
   } finally {
     requestInFlight = false;
   }
@@ -223,22 +264,19 @@ Storage.prototype.setItem = function patchedSetItem(key, value) {
 function ensureAccountControl() {
   let control = document.querySelector("[data-homebase-account]");
   if (control) return control;
-
   const style = document.createElement("style");
   style.textContent = `
     .homebase-account{position:fixed;top:18px;right:18px;z-index:1000;display:flex;align-items:center;gap:9px;max-width:320px;padding:8px 10px;border:1px solid rgba(220,177,139,.22);border-radius:12px;background:rgba(38,31,27,.94);box-shadow:0 12px 28px rgba(0,0,0,.3);color:#efd3b7;font-family:Nunito,system-ui,sans-serif;backdrop-filter:blur(10px)}
     .homebase-account img{width:30px;height:30px;flex:none;border-radius:50%;object-fit:cover;border:1px solid rgba(239,211,183,.25)}
-    .homebase-account-copy{min-width:0;line-height:1.15}.homebase-account-name{display:block;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:700}.homebase-sync-status{display:block;margin-top:3px;color:#bfa389;font-size:10px;max-width:185px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.homebase-sync-status[data-state="ok"]{color:#a9bd82}.homebase-sync-status[data-state="error"]{color:#e59082}
+    .homebase-account-copy{min-width:0;line-height:1.15}.homebase-account-name{display:block;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:700}.homebase-sync-status{display:block;margin-top:3px;color:#bfa389;font-size:10px;max-width:185px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.homebase-sync-status[data-state="ok"]{color:#a9bd82}.homebase-sync-status[data-state="error"]{color:#e59082}.homebase-sync-status[data-state="busy"]{color:#d5b681}
     .homebase-account button{flex:none;border:1px solid rgba(213,135,117,.25);border-radius:9px;background:linear-gradient(#805046,#5f3934);color:#efd3b7;padding:7px 9px;font:700 12px Nunito,system-ui,sans-serif;cursor:pointer}@media(max-width:700px){.homebase-account{top:8px;right:8px;max-width:240px}.homebase-account-name{max-width:88px}.homebase-sync-status{max-width:115px}}
   `;
   document.head.appendChild(style);
-
   control = document.createElement("div");
   control.className = "homebase-account";
   control.dataset.homebaseAccount = "";
   control.innerHTML = `<div class="homebase-account-copy"><span class="homebase-account-name">Cloud sync</span><span class="homebase-sync-status" data-homebase-sync-status>Sign in to sync</span></div><button type="button" data-homebase-auth-button>Sign in with Google</button>`;
   document.body.appendChild(control);
-
   control.querySelector("[data-homebase-auth-button]").addEventListener("click", async () => {
     const button = control.querySelector("[data-homebase-auth-button]");
     button.disabled = true;
@@ -264,14 +302,12 @@ function renderAccount(user) {
   const button = control.querySelector("[data-homebase-auth-button]");
   const copy = control.querySelector(".homebase-account-copy");
   control.querySelector("img")?.remove();
-
   if (!user) {
     copy.querySelector(".homebase-account-name").textContent = "Cloud sync";
     setSyncStatus("Sign in to sync");
     button.textContent = "Sign in with Google";
     return;
   }
-
   if (user.photoURL) {
     const photo = document.createElement("img");
     photo.src = user.photoURL;
@@ -288,6 +324,7 @@ async function pollCloudDocument() {
   requestInFlight = true;
   try {
     const cloud = await readCloudDocument();
+    markSyncSuccess();
     if (!cloud) {
       setSyncStatus("Synced", "ok", "Cloud sync active · waiting for first cloud document");
       return;
@@ -302,9 +339,7 @@ async function pollCloudDocument() {
     }
     setSyncStatus("Synced", "ok", "Cloud sync active · Firestore (default)");
   } catch (error) {
-    console.error("Homebase cloud poll failed:", error);
-    const info = errorInfo(error);
-    setSyncStatus(info.short, "error", info.detail);
+    handleSyncFailure(error, "poll");
   } finally {
     requestInFlight = false;
   }
@@ -312,16 +347,16 @@ async function pollCloudDocument() {
 
 function startPolling() {
   clearInterval(pollTimer);
-  pollTimer = setInterval(pollCloudDocument, 20000);
+  pollTimer = setInterval(pollCloudDocument, POLL_INTERVAL_MS);
 }
 
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   readyToSync = false;
+  consecutiveFailures = 0;
   clearInterval(pollTimer);
   pollTimer = null;
   renderAccount(user);
-
   if (!user) {
     sessionStorage.removeItem(cloudLoadedKey);
     return;
@@ -329,8 +364,8 @@ onAuthStateChanged(auth, async (user) => {
 
   try {
     const cloud = await readCloudDocument();
+    markSyncSuccess();
     const alreadyLoaded = sessionStorage.getItem(cloudLoadedKey) === user.uid;
-
     if (cloud && !alreadyLoaded && Object.keys(cloud.dashboard || {}).length) {
       applyCloudDashboard(cloud.dashboard);
       sessionStorage.setItem(cloudLoadedKey, user.uid);
@@ -344,18 +379,11 @@ onAuthStateChanged(auth, async (user) => {
     if (cloud) sessionStorage.setItem(cloudVersionKey, String(cloud.clientUpdatedAt || 0));
     readyToSync = true;
 
-    if (!cloud || !Object.keys(cloud.dashboard || {}).length) {
-      // First sync: create /users/{uid} from the current local dashboard.
-      await saveDashboardToCloud();
-    } else {
-      setSyncStatus("Synced", "ok", "Cloud sync active · Firestore (default)");
-    }
-
+    if (!cloud || !Object.keys(cloud.dashboard || {}).length) await saveDashboardToCloud();
+    else setSyncStatus("Synced", "ok", "Cloud sync active · Firestore (default)");
     startPolling();
   } catch (error) {
-    console.error("Homebase cloud load failed:", error);
-    const info = errorInfo(error);
-    setSyncStatus(info.short, "error", info.detail);
+    handleSyncFailure(error, "initial load");
   }
 });
 
