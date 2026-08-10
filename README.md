@@ -26,7 +26,7 @@ Then open the local URL shown in the terminal.
 
 ## GitHub Pages
 
-This project is ready to publish as a GitHub Pages site from the `main` branch.
+This project is published with the included GitHub Actions workflow.
 
 After pushing to GitHub:
 
