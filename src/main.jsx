@@ -3,11 +3,10 @@ import { createRoot } from "react-dom/client";
 import {
   CalendarDays,
   Check,
-  ChevronRight,
+  ChevronDown,
   Circle,
   ClipboardList,
-  Cloud,
-  Coffee,
+  CloudSun,
   Edit3,
   ExternalLink,
   FileText,
@@ -17,17 +16,12 @@ import {
   Link,
   Mail,
   Music,
-  Pause,
   Play,
   Plus,
   Settings,
   SkipBack,
   SkipForward,
   Sparkles,
-  Star,
-  Timer,
-  Trash2,
-  MessageCircle,
   Video,
   X
 } from "lucide-react";
@@ -43,14 +37,14 @@ const tasks = [
   { text: "Read for 20 minutes", tag: "Personal" }
 ];
 
-const events = [
-  { day: "MON", date: "11" },
-  { day: "TUE", date: "12" },
-  { day: "WED", date: "13", active: true },
-  { day: "THU", date: "14" },
-  { day: "FRI", date: "15" },
-  { day: "SAT", date: "16" },
-  { day: "SUN", date: "17" }
+const dates = [
+  ["MON", "11"],
+  ["TUE", "12"],
+  ["WED", "13", true],
+  ["THU", "14"],
+  ["FRI", "15"],
+  ["SAT", "16"],
+  ["SUN", "17"]
 ];
 
 const nav = [
@@ -59,57 +53,32 @@ const nav = [
   [ClipboardList, "Tasks"],
   [CalendarDays, "Planner"],
   [Link, "Links"],
-  [Timer, "Focus"],
+  [Sparkles, "Focus"],
   [Music, "Music"],
   [Settings, "Settings"]
 ];
 
 function App() {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [secondsLeft, setSecondsLeft] = useState(25 * 60);
-  const [timerRunning, setTimerRunning] = useState(false);
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
-    const clock = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(clock);
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    if (!timerRunning) return undefined;
-    const timer = setInterval(() => {
-      setSecondsLeft((value) => {
-        if (value <= 1) {
-          setTimerRunning(false);
-          return 25 * 60;
-        }
-        return value - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [timerRunning]);
-
-  const timeLabel = useMemo(() => {
-    return now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-  }, [now]);
-
-  const timerLabel = useMemo(() => {
-    const minutes = Math.floor(secondsLeft / 60).toString().padStart(2, "0");
-    const seconds = (secondsLeft % 60).toString().padStart(2, "0");
-    return `${minutes}:${seconds}`;
-  }, [secondsLeft]);
+  const timeLabel = useMemo(
+    () => now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+    [now]
+  );
 
   return (
-    <main className="shell" aria-label="Homebase dashboard">
-      <aside className="sidebar" aria-label="Primary navigation">
-        <div className="avatar">
-          <span>KM</span>
-          <Sparkles size={18} />
-        </div>
+    <main className="shell">
+      <aside className="sidebar">
+        <div className="avatar"><span>KM</span><Sparkles size={15} /></div>
         <nav>
           {nav.map(([Icon, label], index) => (
-            <button className={index === 0 ? "nav-item active" : "nav-item"} key={label} aria-label={label}>
-              <Icon size={25} />
+            <button className={index === 0 ? "nav-item active" : "nav-item"} key={label}>
+              <Icon size={22} />
               <span>{label}</span>
             </button>
           ))}
@@ -117,248 +86,141 @@ function App() {
       </aside>
 
       <section className="dashboard">
-        <Panel className="todo-panel span-2" title="To-Do List" icon={<Sparkles />}>
-          <div className="panel-action">
-            <Plus size={17} /> Add Task
-          </div>
-          <div className="chips" aria-label="Task filters">
-            {["All", "Work", "Personal", "Health", "Other"].map((label) => (
-              <button key={label}>{label}</button>
-            ))}
+        <Panel className="todo-panel" title="To-Do List" icon={<Sparkles />} action={<><Plus size={14}/> Add Task</>}>
+          <div className="chips">
+            {["All", "Work", "Personal", "Health", "Other"].map((label) => <button key={label}>{label}</button>)}
           </div>
           <div className="task-list">
             {tasks.map((task) => (
               <div className={task.done ? "task done" : "task"} key={task.text}>
-                <span className="drag" aria-hidden="true">::</span>
-                <span className="box">{task.done && <Check size={15} />}</span>
+                <span className="drag">•••</span>
+                <span className="box">{task.done && <Check size={13}/>}</span>
                 <span className="task-text">{task.text}</span>
                 <span className={`tag ${task.tag.toLowerCase()}`}>{task.tag}</span>
-                <button aria-label={`Edit ${task.text}`}><Edit3 size={16} /></button>
-                <button aria-label={`Delete ${task.text}`}><X size={16} /></button>
+                <button><Edit3 size={14}/></button>
+                <button><X size={14}/></button>
               </div>
             ))}
           </div>
-          <button className="inline-add"><Plus size={15} /> Add new task</button>
+          <button className="inline-add"><Plus size={14}/> Add new task</button>
         </Panel>
 
-        <section className="paper-card">
-          <div className="binder"></div>
-          <div className="paper-head">
-            <h2>Today <Star size={22} /></h2>
-            <button><Plus size={16} /> Add</button>
-          </div>
-          {["Client call at 11am", "Finish stream overlay", "Take meds", "Walk Luna"].map((item, index) => (
-            <div className={index === 1 ? "paper-row complete" : "paper-row"} key={item}>
-              {index === 1 ? <Check size={18} /> : <Circle size={20} />}
-              <span>{item}</span>
+        <section className="today-card">
+          <div className="tape"/>
+          <div className="today-head"><h2>Today ♡</h2><button><Plus size={14}/> Add</button></div>
+          {["Client call at 11am", "Finish stream overlay", "Take meds", "Walk Luna"].map((item, i) => (
+            <div className={i === 1 ? "today-row complete" : "today-row"} key={item}>
+              {i === 1 ? <Check size={17}/> : <Circle size={18}/>}<span>{item}</span>
             </div>
           ))}
-          <div className="cat" aria-hidden="true">
-            <span className="cat-ear left"></span>
-            <span className="cat-ear right"></span>
-            <span className="cat-face">o o</span>
-          </div>
-          <div className="sticky">You have got this!</div>
+          <div className="bear">ʕ•ᴥ•ʔ</div>
         </section>
 
-        <Panel className="week-panel span-2" title="Week at a Glance" icon={<CalendarDays />}>
-          <div className="panel-action"><Plus size={17} /> Add Event</div>
+        <Panel className="week-panel" title="Week at a Glance" icon={<CalendarDays />} action={<><Plus size={14}/> Add Event</>}>
           <div className="dates">
-            {events.map((event) => (
-              <div className={event.active ? "date active" : "date"} key={event.day}>
-                <span>{event.day}</span>
-                <strong>{event.date}</strong>
-              </div>
+            {dates.map(([day, date, active]) => (
+              <div className={active ? "date active" : "date"} key={day}><span>{day}</span><strong>{date}</strong></div>
             ))}
           </div>
           <div className="event-grid">
-            <EventCard dot="lavender" title="Team Meeting" time="10:00 AM" />
-            <EventCard dot="green" title="Stream Night" time="7:00 PM" icon={<Gamepad2 size={18} />} />
-            <EventCard dot="rose" title="Dentist Appointment" time="2:30 PM" />
-            <EventCard dot="gold" title="Community Movie Night" time="8:00 PM" />
+            <EventCard className="purple" title="Team Meeting" time="10:00 AM" />
+            <EventCard className="green" title="Stream Night" time="7:00 PM" icon={<Gamepad2 size={14}/>} />
+            <EventCard className="rose" title="Dentist Appointment" time="2:30 PM" />
+            <EventCard className="gold" title="Community Movie Night" time="8:00 PM" />
           </div>
-          <button className="view-week">View full week <ChevronRight size={18} /></button>
+          <button className="view-week">View full week <ChevronDown size={16}/></button>
         </Panel>
 
-        <section className="weather-card">
-          <Sparkles className="spark one" size={16} />
-          <Sparkles className="spark two" size={16} />
-          <div className="time">{timeLabel}<span>AM</span></div>
-          <div className="date-line">Wed, May 13</div>
-          <div className="weather-divider"></div>
-          <div className="weather-row">
-            <Cloud size={52} />
-            <div>
-              <strong>18 C</strong>
-              <span>Partly Cloudy</span>
-              <small>Feels like 18</small>
-            </div>
-          </div>
-        </section>
-
-        <Panel className="brain-panel span-2" title="Brain Dump" icon={<Cloud />}>
-          <div className="note-input">
-            <input aria-label="Brain dump note" placeholder="Type something..." />
-            <button>Add</button>
-          </div>
-          {[
-            ["Idea: cozy Minecraft build new cottagecore area", "Today"],
-            ["Check out new lo-fi playlist", "Today"],
-            ["Look into new mic", "Yesterday"],
-            ["Book vet appointment", "May 11"],
-            ["Try that new pasta recipe", "May 10"]
-          ].map(([text, date]) => (
-            <div className="dump-row" key={text}>
-              <span className="mini-drag">:</span>
-              <span>{text}</span>
-              <time>{date}</time>
-            </div>
-          ))}
-          <div className="brain-actions">
-            <button><ChevronRight size={16} /> To-Do</button>
-            <button><Trash2 size={16} /> Clear All</button>
-          </div>
-        </Panel>
-
-        <Panel className="focus-panel" title="Focus Timer" icon={<Timer />}>
-          <button className="ghost-gear" aria-label="Timer settings"><Settings size={20} /></button>
-          <div className="segments">
-            <button className="selected">Focus</button>
-            <button>Short Break</button>
-          </div>
-          <div className="timer-ring" style={{ "--progress": `${(secondsLeft / 1500) * 360}deg` }}>
-            <span>{timerLabel}</span>
-          </div>
-          <button className="start" onClick={() => setTimerRunning((value) => !value)}>
-            {timerRunning ? "Pause" : "Start"}
-          </button>
-          <div className="mini-controls">
-            <button aria-label="Reset timer" onClick={() => { setSecondsLeft(25 * 60); setTimerRunning(false); }}>
-              <Timer size={18} />
-            </button>
-            <button aria-label="Music mode"><Music size={18} /></button>
-          </div>
-        </Panel>
-
-        <Panel className="music-panel span-2" title="Now Playing" icon={<Music />}>
-          <button className="ghost-gear" aria-label="Music options"><Sparkles size={18} /></button>
-          <div className="player">
-            <div className="cozy-art" role="img" aria-label="Cozy night desk illustration">
-              <span className="window"></span>
-              <span className="lamp"></span>
-              <span className="desk-line"></span>
-              <span className="notebook"></span>
-              <span className="plant one"></span>
-              <span className="plant two"></span>
-            </div>
-            <div>
-              <h3>{isPlaying ? "Cozy Night Desk" : "No song playing"}</h3>
-              <p>{isPlaying ? "Lo-fi focus mix" : "Play something you love"}</p>
-            </div>
-          </div>
-          <div className="track"><span style={{ width: isPlaying ? "42%" : "18%" }}></span></div>
-          <div className="player-controls">
-            <button aria-label="Previous"><SkipBack size={24} /></button>
-            <button className="play" onClick={() => setIsPlaying((value) => !value)} aria-label="Play or pause">
-              {isPlaying ? <Pause size={24} /> : <Play size={24} />}
-            </button>
-            <button aria-label="Next"><SkipForward size={24} /></button>
-          </div>
-        </Panel>
-
-        <aside className="right-rail">
-          <section className="pinned-note">
-            <strong>Quick Note</strong>
-            <p>Do not forget to be proud of how far you have come</p>
-            <Heart size={20} />
+        <aside className="right-top">
+          <section className="weather-card">
+            <div className="time">{timeLabel}<small>AM</small></div>
+            <div className="date-line">WED, MAY 13</div>
+            <div className="weather-divider"/>
+            <div className="weather-row"><CloudSun size={47}/><div><strong>18°C</strong><span>Partly Cloudy</span><small>Feels like 18°</small></div></div>
           </section>
-          <MiniPanel title="Active CC LOAs" icon={<Settings size={18} />} action={<Plus size={17} />}>
-            <InfoLine title="Kaida" main="May 10 - May 24" meta="Returns May 25" badge="1" />
-          </MiniPanel>
-          <MiniPanel title="Next Stream" icon={<CalendarDays size={18} />} action={<Edit3 size={17} />}>
-            <InfoLine title="Highlife RP" main="May 16, 2025" meta="7:00 PM BST" badge={<Gamepad2 size={17} />} />
-          </MiniPanel>
-          <MiniPanel title="Upcoming Birthdays" icon={<Coffee size={18} />} action={<Plus size={17} />}>
-            {["Mira  May 15  in 2d", "Luna  May 20  in 7d", "Ash  May 28  in 15d"].map((birthday, index) => (
-              <div className="birthday" key={birthday}>
-                <span>{["M", "L", "A"][index]}</span>
-                <p>{birthday}</p>
-              </div>
-            ))}
-          </MiniPanel>
+          <section className="brain-sticky">
+            <div className="pin"/>
+            <h2>Brain Dump ☁</h2>
+            <p>• Idea: cozy Minecraft</p>
+            <p className="indent">build new cottagecore</p>
+            <p className="indent">area</p>
+            <p>• Check out new lo-fi</p>
+            <p className="indent">playlist</p>
+            <p>• Look into new mic</p>
+          </section>
         </aside>
 
-        <Panel className="links-panel span-4" title="Quick Links" icon={<ExternalLink />}>
+        <Panel className="music-panel" title="Now Playing" icon={<Music />}>
+          <div className="player-body">
+            <div className="album-art">
+              <span className="sun"/><span className="window"/><span className="desk"/><span className="plant"/>
+            </div>
+            <div className="song-copy"><h3>No song playing</h3><p>Play something<br/>you love ♡</p></div>
+          </div>
+          <div className="progress"><span/></div>
+          <div className="timecodes"><span>0:00</span><span>0:00</span></div>
+          <div className="player-controls"><button><SkipBack/></button><button className="play"><Play fill="currentColor"/></button><button><SkipForward/></button></div>
+        </Panel>
+
+        <div className="middle-stack">
+          <MiniPanel title="Active CC LOAs" icon={<Settings size={18}/>} action={<Plus size={16}/>}>
+            <InfoLine badge="1" title="Kaida" main="May 10 - May 24" meta="Returns May 25" />
+          </MiniPanel>
+          <MiniPanel title="Next Stream" icon={<CalendarDays size={18}/>} action={<Edit3 size={16}/>}>
+            <InfoLine badge={<Gamepad2 size={15}/>} title="Highlife RP" main="May 16, 2025" meta="◷ 7:00 PM BST" pill="in 2d 8h" />
+          </MiniPanel>
+        </div>
+
+        <MiniPanel className="birthday-panel" title="Upcoming Birthdays" icon={<span className="cupcake">🧁</span>} action={<Plus size={16}/>}>
+          <Birthday avatar="👩🏻" name="Mira" date="May 15" pill="in 2d" />
+          <Birthday avatar="👩🏼" name="Luna" date="May 20" pill="in 7d" />
+          <Birthday avatar="👩🏽" name="Ash" date="May 28" pill="in 15d" />
+        </MiniPanel>
+
+        <Panel className="links-panel" title="Quick Links" icon={<ExternalLink />} action={<><Plus size={14}/> Add Link</>}>
           <div className="link-grid">
-            <QuickLink label="Gmail" icon={<Mail />} />
-            <QuickLink label="Notion" icon={<FileText />} />
-            <QuickLink label="Twitch" icon={<MessageCircle />} />
-            <QuickLink label="Canva" icon={<Sparkles />} />
-            <QuickLink label="Discord" icon={<Gamepad2 />} />
-            <QuickLink label="Drive" icon={<Cloud />} />
-            <QuickLink label="YouTube" icon={<Video />} />
-            <QuickLink label="ChatGPT" icon={<Sparkles />} />
+            <QuickLink icon={<Mail/>} label="Gmail" />
+            <QuickLink icon={<FileText/>} label="Notion" />
+            <QuickLink icon={<span className="brand-letter">T</span>} label="Twitch" />
+            <QuickLink icon={<span className="brand-letter">C</span>} label="Canva" />
+            <QuickLink icon={<Gamepad2/>} label="Discord" />
+            <QuickLink icon={<span className="brand-letter">▲</span>} label="Drive" />
+            <QuickLink icon={<Video/>} label="YouTube" />
+            <QuickLink icon={<Sparkles/>} label="ChatGPT" />
           </div>
         </Panel>
+
+        <div className="desktop-decor cat-decor">🐱</div>
+        <div className="desktop-decor journal">take it<br/>easy!<br/>♥</div>
+        <div className="desktop-decor coffee">☕</div>
       </section>
     </main>
   );
 }
 
-function Panel({ title, icon, className = "", children }) {
-  return (
-    <section className={`panel ${className}`}>
-      <header>
-        <span className="title-icon">{React.cloneElement(icon, { size: 24 })}</span>
-        <h2>{title}</h2>
-      </header>
-      {children}
-    </section>
-  );
+function Panel({ title, icon, action, className = "", children }) {
+  return <section className={`panel ${className}`}><header><span className="title-icon">{React.cloneElement(icon, { size: 22 })}</span><h2>{title}</h2>{action && <button className="panel-action">{action}</button>}</header>{children}</section>;
 }
 
-function EventCard({ dot, icon, title, time }) {
-  return (
-    <article className={`event-card ${dot}`}>
-      <div>{icon || <span className="dot" />}{title}</div>
-      <time>{time}</time>
-    </article>
-  );
+function EventCard({ title, time, icon, className }) {
+  return <article className={`event-card ${className}`}><div>{icon || <span className="dot"/>}<span>{title}</span></div><time>{time}</time></article>;
 }
 
-function MiniPanel({ title, icon, action, children }) {
-  return (
-    <section className="mini-panel">
-      <header>
-        <span>{icon}</span>
-        <h2>{title}</h2>
-        <button aria-label={`Add to ${title}`}>{action}</button>
-      </header>
-      {children}
-    </section>
-  );
+function MiniPanel({ title, icon, action, className = "", children }) {
+  return <section className={`mini-panel ${className}`}><header><span>{icon}</span><h2>{title}</h2><button>{action}</button></header>{children}</section>;
 }
 
-function InfoLine({ title, main, meta, badge }) {
-  return (
-    <article className="info-line">
-      <span className="badge">{badge}</span>
-      <div>
-        <strong>{title}</strong>
-        <p>{main}</p>
-        <small>{meta}</small>
-      </div>
-    </article>
-  );
+function InfoLine({ badge, title, main, meta, pill }) {
+  return <article className="info-line"><span className="badge">{badge}</span><div><strong>{title}</strong><p>{main}</p><small>{meta}</small></div>{pill && <span className="pill">{pill}</span>}</article>;
+}
+
+function Birthday({ avatar, name, date, pill }) {
+  return <div className="birthday"><span className="birthday-avatar">{avatar}</span><strong>{name}</strong><span className="birthday-date">{date}</span><span className="birthday-pill">{pill}</span></div>;
 }
 
 function QuickLink({ icon, label }) {
-  return (
-    <button className="quick-link" aria-label={label}>
-      {React.cloneElement(icon, { size: 34 })}
-      <span>{label}</span>
-    </button>
-  );
+  const rendered = React.isValidElement(icon) ? React.cloneElement(icon, icon.type === "span" ? {} : { size: 28 }) : icon;
+  return <button className="quick-link">{rendered}<span>{label}</span></button>;
 }
 
 createRoot(document.getElementById("root")).render(<App />);
