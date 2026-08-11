@@ -8,195 +8,64 @@
 .home-links-grid .site-icon img{width:27px!important;height:27px!important;object-fit:contain!important}
 .home-links-grid a>span:last-child{font-size:11px!important;line-height:1.2!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important}
 
-/* Wide desktop — mirrors the supplied mockup:
-   top: clock | todo | week
-   middle: birthdays | LOAs | warnings | quick links
-   bottom: now playing across the full width. */
+/* Wide desktop. Use content-sized top/bottom rows and give the remaining height
+   to the useful middle row instead of stretching/squashing everything equally. */
 @media (min-width:1181px){
-  .page-shell{
-    height:calc(100vh - 16px)!important;
-    min-height:0!important;
-    overflow:hidden!important;
-    padding-bottom:0!important
-  }
-
+  .page-shell{height:calc(100vh - 16px)!important;min-height:0!important;overflow:hidden!important;padding-bottom:0!important}
   .dashboard-grid{
-    height:100%!important;
-    min-height:0!important;
+    height:100%!important;min-height:0!important;
     grid-template-columns:repeat(12,minmax(0,1fr))!important;
     grid-template-areas:
       "clock clock clock todo todo todo todo todo week week week week"
       "birthdays birthdays birthdays loa loa warnings warnings links links links links links"
       "music music music music music music music music music music music music"!important;
-    grid-template-rows:minmax(0,1.18fr) minmax(0,.98fr) minmax(0,.53fr)!important;
-    gap:12px!important;
-    align-items:stretch!important
+    grid-template-rows:minmax(190px,auto) minmax(205px,1fr) minmax(145px,185px)!important;
+    gap:14px!important;align-items:stretch!important
   }
-
-  .clock-card{grid-area:clock!important}
-  .todo-card{grid-area:todo!important}
-  .week-card{grid-area:week!important}
-  .birthdays-card{grid-area:birthdays!important}
-  .loa-card{grid-area:loa!important}
-  .warnings-card{grid-area:warnings!important}
-  .home-links-card{grid-area:links!important}
-  .music-card{grid-area:music!important}
-
-  .clock-card,.todo-card,.week-card,.birthdays-card,.loa-card,.warnings-card,.home-links-card,.music-card{
-    height:100%!important;
-    min-height:0!important;
-    min-width:0!important;
-    align-self:stretch!important;
-    overflow:hidden!important
-  }
-
-  .panel{padding:16px!important}
-  .panel h2{font-size:15px!important}
-  .panel header{min-height:27px!important}
-  .panel header button{font-size:12px!important}
-
-  .clock-card{padding:18px!important}
-  .day-script{font-size:24px!important}
-  .big-time{font-size:52px!important;margin:8px 0 3px!important}
-  .date-label{font-size:16px!important}
-  .divider{margin:11px 0!important}
-  .weather-emoji{font-size:38px!important}
-  .weather-line{gap:12px!important}
-  .weather-line strong{font-size:23px!important}
-  .weather-line span{font-size:13px!important}
-  .weather-line small{font-size:10px!important}
-  .weather-meta{margin:5px 0 0 50px!important;font-size:10px!important}
-
-  .task-list,.week-events,.people-list,.cc-list{min-height:0!important;overflow:auto!important;scrollbar-width:thin}
-  .task-list{margin-top:9px!important;max-height:calc(100% - 45px)!important}
-  .task-row{min-height:37px!important}
-  .task-text{font-size:13px!important}
-  .week-events{gap:7px!important;margin-top:10px!important;max-height:calc(100% - 45px)!important}
-  .week-event{min-height:36px!important;padding:7px 9px!important}
-  .week-event span,.week-event strong{font-size:11px!important}
-
-  .people-list{margin-top:11px!important;max-height:calc(100% - 64px)!important}
-  .person-row{min-height:45px!important}
-  .cc-card{padding:14px!important}
-  .cc-list{gap:7px!important;margin-top:10px!important;max-height:calc(100% - 74px)!important}
-  .cc-row{min-height:48px!important;padding:7px 8px!important}
-  .cc-footer{padding-top:8px!important;margin-top:8px!important}
-  .empty-state{padding:18px 8px!important;line-height:1.45!important}
-
-  .home-links-card{padding:16px 18px!important}
-  .home-links-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:13px 16px!important;margin-top:13px!important}
-  .home-links-grid .site-icon{width:36px!important;height:36px!important}
-  .home-links-grid .site-icon img{width:29px!important;height:29px!important}
-
-  .music-card{padding:13px 18px!important}
-  .music-main{margin-top:3px!important;grid-template-columns:150px minmax(0,1fr)!important;gap:18px!important;min-width:0!important;align-items:center!important}
-  .album-art,.album-image{width:150px!important;height:92px!important;max-width:150px!important;max-height:92px!important}
-  .song-info,.music-info{min-width:0!important;overflow:hidden!important}
-  .song-info strong,.song-info span,.music-info h3,.music-info p{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
-  .progress{margin:5px 0 0 168px!important;width:calc(100% - 168px)!important;max-width:calc(100% - 168px)!important}
-  .timecodes{margin:2px 0 0 168px!important;width:calc(100% - 168px)!important;max-width:calc(100% - 168px)!important}
-  .controls{margin-top:-1px!important;gap:24px!important;justify-content:center!important;flex-wrap:nowrap!important}
-  .controls .play{width:42px!important;height:42px!important;flex:none!important}
+  .clock-card{grid-area:clock!important}.todo-card{grid-area:todo!important}.week-card{grid-area:week!important}.birthdays-card{grid-area:birthdays!important}.loa-card{grid-area:loa!important}.warnings-card{grid-area:warnings!important}.home-links-card{grid-area:links!important}.music-card{grid-area:music!important}
+  .clock-card,.todo-card,.week-card,.birthdays-card,.loa-card,.warnings-card,.home-links-card,.music-card{height:100%!important;min-height:0!important;min-width:0!important;align-self:stretch!important;overflow:hidden!important}
+  .panel{padding:18px!important}.panel h2{font-size:15px!important}.panel header{min-height:28px!important}.panel header button{font-size:12px!important}
+  .clock-card{padding:18px!important}.day-script{font-size:24px!important}.big-time{font-size:52px!important;margin:8px 0 3px!important}.date-label{font-size:16px!important}.divider{margin:11px 0!important}.weather-emoji{font-size:36px!important}.weather-line{gap:12px!important}.weather-line strong{font-size:21px!important}.weather-line span{font-size:13px!important}.weather-line small{font-size:10px!important}.weather-meta{margin:5px 0 0 50px!important;font-size:10px!important}
+  .task-list,.week-events,.people-list,.cc-list{min-height:0!important;overflow:auto!important;scrollbar-width:thin}.task-list{margin-top:12px!important;max-height:calc(100% - 48px)!important}.task-row{min-height:39px!important}.task-text{font-size:13px!important}.week-events{gap:7px!important;margin-top:10px!important;max-height:calc(100% - 45px)!important}.week-event{min-height:36px!important;padding:7px 9px!important}.week-event span,.week-event strong{font-size:11px!important}
+  .people-list{margin-top:11px!important;max-height:calc(100% - 64px)!important}.person-row{min-height:45px!important}.cc-card{padding:16px!important}.cc-list{gap:7px!important;margin-top:10px!important;max-height:calc(100% - 74px)!important}.cc-row{min-height:48px!important;padding:7px 8px!important}.cc-footer{padding-top:8px!important;margin-top:8px!important}.empty-state{padding:18px 8px!important;line-height:1.45!important}
+  .home-links-card{padding:16px 18px!important}.home-links-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:13px 16px!important;margin-top:13px!important}.home-links-grid .site-icon{width:36px!important;height:36px!important}.home-links-grid .site-icon img{width:29px!important;height:29px!important}
+  .music-card{padding:14px 18px!important}.music-main{margin-top:5px!important;grid-template-columns:128px minmax(0,1fr)!important;gap:18px!important;min-width:0!important;align-items:center!important}.album-art,.album-image{width:128px!important;height:92px!important;max-width:128px!important;max-height:92px!important}.song-info,.music-info{min-width:0!important;overflow:hidden!important}.song-info strong,.song-info span,.music-info h3,.music-info p{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}.progress{margin:5px 0 0 146px!important;width:calc(100% - 146px)!important;max-width:calc(100% - 146px)!important}.timecodes{margin:2px 0 0 146px!important;width:calc(100% - 146px)!important;max-width:calc(100% - 146px)!important}.controls{margin-top:4px!important;gap:24px!important;justify-content:center!important;flex-wrap:nowrap!important}.controls .play{width:42px!important;height:42px!important;flex:none!important}
 }
 
-@media (min-width:1181px) and (max-height:760px){
-  .dashboard-grid{grid-template-rows:minmax(0,1.12fr) minmax(0,.9fr) minmax(0,.48fr)!important;gap:10px!important}
-  .panel{padding:13px!important}.clock-card{padding:14px!important}
-  .day-script{font-size:20px!important}.big-time{font-size:43px!important}.date-label{font-size:14px!important}
-  .weather-emoji{font-size:31px!important}.weather-line strong{font-size:19px!important}
-  .task-row{min-height:31px!important}.person-row{min-height:39px!important}.cc-row{min-height:41px!important}
-  .home-links-grid{gap:8px 12px!important;margin-top:8px!important}.home-links-grid .site-icon{width:29px!important;height:29px!important}.home-links-grid .site-icon img{width:23px!important;height:23px!important}
-  .music-card{padding:10px 14px!important}.music-main{grid-template-columns:108px minmax(0,1fr)!important;gap:13px!important}.album-art,.album-image{width:108px!important;height:68px!important}.progress,.timecodes{margin-left:121px!important;width:calc(100% - 121px)!important;max-width:calc(100% - 121px)!important}.controls{gap:18px!important}.controls .play{width:36px!important;height:36px!important}
+/* Browser chrome can leave a nominally wide desktop with only ~850px of usable
+   height. This is the layout in the user's screenshot: keep breathing room, but
+   make all three dashboard rows genuinely visible without scrolling. */
+@media (min-width:1181px) and (max-height:900px){
+  .dashboard-grid{grid-template-rows:minmax(165px,1fr) minmax(185px,1.12fr) 150px!important;gap:12px!important}
+  .panel{padding:15px!important}.clock-card{padding:16px!important}
+  .day-script{font-size:21px!important}.big-time{font-size:44px!important;margin:5px 0 2px!important}.date-label{font-size:14px!important}.divider{margin:8px 0!important}.weather-emoji{font-size:30px!important}.weather-line strong{font-size:18px!important}
+  .task-row{min-height:34px!important}.person-row{min-height:41px!important}.cc-row{min-height:43px!important}
+  .home-links-grid{gap:9px 13px!important;margin-top:9px!important}.home-links-grid .site-icon{width:31px!important;height:31px!important}.home-links-grid .site-icon img{width:25px!important;height:25px!important}
+  .music-card{padding:11px 15px!important}.music-main{grid-template-columns:92px minmax(0,1fr)!important;gap:14px!important;margin-top:2px!important}.album-art,.album-image{width:92px!important;height:70px!important}.progress,.timecodes{margin-left:106px!important;width:calc(100% - 106px)!important;max-width:calc(100% - 106px)!important}.controls{gap:18px!important;margin-top:0!important}.controls .play{width:36px!important;height:36px!important}
+}
+
+@media (min-width:1181px) and (max-height:720px){
+  .dashboard-grid{grid-template-rows:minmax(145px,1fr) minmax(160px,1fr) 126px!important;gap:10px!important}
+  .panel{padding:12px!important}.clock-card{padding:13px!important}.big-time{font-size:38px!important}.weather-line{gap:8px!important}.weather-emoji{font-size:26px!important}
+  .home-links-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:5px 10px!important;margin-top:5px!important}.home-links-grid .site-icon{width:26px!important;height:26px!important}.home-links-grid .site-icon img{width:21px!important;height:21px!important}
+  .music-card{padding:9px 13px!important}.music-main{grid-template-columns:76px minmax(0,1fr)!important}.album-art,.album-image{width:76px!important;height:58px!important}.progress,.timecodes{margin-left:90px!important;width:calc(100% - 90px)!important;max-width:calc(100% - 90px)!important}.controls .play{width:32px!important;height:32px!important}
 }
 
 /* Narrow landscape / small desktop. */
 @media (min-width:821px) and (max-width:1180px){
   .page-shell{height:auto!important;overflow:visible!important;padding-bottom:20px!important}
-  .dashboard-grid{
-    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
-    grid-template-areas:
-      "clock todo"
-      "week week"
-      "birthdays loa"
-      "warnings links"
-      "music music"!important;
-    grid-template-rows:auto auto auto auto auto!important;
-    gap:14px!important;
-    height:auto!important;
-    min-height:0!important;
-    width:100%!important;
-    max-width:100%!important;
-    align-items:start!important
-  }
+  .dashboard-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-areas:"clock todo" "week week" "birthdays loa" "warnings links" "music music"!important;grid-template-rows:auto auto auto auto auto!important;gap:14px!important;height:auto!important;min-height:0!important;width:100%!important;max-width:100%!important;align-items:start!important}
   .clock-card{grid-area:clock!important}.todo-card{grid-area:todo!important}.week-card{grid-area:week!important}.birthdays-card{grid-area:birthdays!important}.loa-card{grid-area:loa!important}.warnings-card{grid-area:warnings!important}.home-links-card{grid-area:links!important}.music-card{grid-area:music!important}
-  .panel{padding:16px!important}.home-links-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
-  .music-main{grid-template-columns:100px minmax(0,1fr)!important;gap:12px!important}.album-art,.album-image{width:100px!important;height:76px!important}.progress,.timecodes{margin-left:112px!important;width:calc(100% - 112px)!important;max-width:calc(100% - 112px)!important}
+  .panel{padding:16px!important}.home-links-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}.music-main{grid-template-columns:100px minmax(0,1fr)!important;gap:12px!important}.album-art,.album-image{width:100px!important;height:76px!important}.progress,.timecodes{margin-left:112px!important;width:calc(100% - 112px)!important;max-width:calc(100% - 112px)!important}
 }
 
-/* Portrait monitors can still report a wide CSS viewport, so orientation—not just width—must force the portrait layout. */
+/* Portrait monitors. */
 @media (orientation:portrait) and (min-width:821px){
-  html,body,#root{max-width:100vw!important;overflow-x:hidden!important}
-  .shell{
-    grid-template-columns:78px minmax(0,1fr)!important;
-    gap:12px!important;
-    padding:10px!important;
-    width:100vw!important;
-    max-width:100vw!important;
-    overflow:hidden!important
-  }
-  .sidebar{height:calc(100vh - 20px)!important;top:10px!important;padding:12px 7px!important}
-  .nav-item{min-height:68px!important}
-  .nav-item span{font-size:11px!important}
-  .page-shell{
-    width:100%!important;
-    max-width:100%!important;
-    min-width:0!important;
-    height:calc(100vh - 20px)!important;
-    overflow:hidden!important;
-    padding-bottom:0!important
-  }
-  .dashboard-grid{
-    width:100%!important;
-    max-width:100%!important;
-    min-width:0!important;
-    height:100%!important;
-    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
-    grid-template-areas:
-      "clock todo"
-      "links todo"
-      "week week"
-      "birthdays loa"
-      "warnings music"!important;
-    grid-template-rows:minmax(0,.95fr) minmax(0,.72fr) minmax(0,.95fr) minmax(0,.82fr) minmax(0,.72fr)!important;
-    gap:12px!important;
-    align-items:stretch!important;
-    overflow:hidden!important
-  }
+  html,body,#root{max-width:100vw!important;overflow-x:hidden!important}.shell{grid-template-columns:78px minmax(0,1fr)!important;gap:12px!important;padding:10px!important;width:100vw!important;max-width:100vw!important;overflow:hidden!important}.sidebar{height:calc(100vh - 20px)!important;top:10px!important;padding:12px 7px!important}.nav-item{min-height:68px!important}.nav-item span{font-size:11px!important}.page-shell{width:100%!important;max-width:100%!important;min-width:0!important;height:calc(100vh - 20px)!important;overflow:hidden!important;padding-bottom:0!important}
+  .dashboard-grid{width:100%!important;max-width:100%!important;min-width:0!important;height:100%!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-areas:"clock todo" "links todo" "week week" "birthdays loa" "warnings music"!important;grid-template-rows:minmax(0,.95fr) minmax(0,.72fr) minmax(0,.95fr) minmax(0,.82fr) minmax(0,.72fr)!important;gap:12px!important;align-items:stretch!important;overflow:hidden!important}
   .clock-card{grid-area:clock!important}.todo-card{grid-area:todo!important}.week-card{grid-area:week!important}.birthdays-card{grid-area:birthdays!important}.loa-card{grid-area:loa!important}.warnings-card{grid-area:warnings!important}.home-links-card{grid-area:links!important}.music-card{grid-area:music!important}
-  .clock-card,.todo-card,.week-card,.birthdays-card,.loa-card,.warnings-card,.home-links-card,.music-card{
-    min-width:0!important;
-    min-height:0!important;
-    width:100%!important;
-    height:100%!important;
-    overflow:hidden!important
-  }
-  .panel{padding:14px!important}
-  .todo-card{padding-right:14px!important}
-  .todo-decor{display:none!important}
-  .task-list,.week-events,.people-list,.cc-list{min-height:0!important;max-height:calc(100% - 42px)!important;overflow:auto!important;scrollbar-width:thin}
-  .home-links-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;margin-top:8px!important}
-  .home-links-grid .site-icon{width:28px!important;height:28px!important}
-  .home-links-grid .site-icon img{width:22px!important;height:22px!important}
-  .home-links-grid a>span:last-child{font-size:9px!important}
-  .week-row{grid-template-columns:56px minmax(0,1fr) auto 42px!important;gap:8px!important}
-  .music-card{padding:12px!important}
-  .music-main{grid-template-columns:78px minmax(0,1fr)!important;gap:10px!important;margin-top:4px!important}
-  .album-art,.album-image{width:78px!important;height:62px!important;max-width:78px!important;max-height:62px!important}
-  .progress,.timecodes{margin-left:88px!important;width:calc(100% - 88px)!important;max-width:calc(100% - 88px)!important}
-  .controls{gap:12px!important}.controls .play{width:34px!important;height:34px!important}
+  .clock-card,.todo-card,.week-card,.birthdays-card,.loa-card,.warnings-card,.home-links-card,.music-card{min-width:0!important;min-height:0!important;width:100%!important;height:100%!important;overflow:hidden!important}.panel{padding:14px!important}.todo-card{padding-right:14px!important}.todo-decor{display:none!important}.task-list,.week-events,.people-list,.cc-list{min-height:0!important;max-height:calc(100% - 42px)!important;overflow:auto!important;scrollbar-width:thin}.home-links-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;margin-top:8px!important}.home-links-grid .site-icon{width:28px!important;height:28px!important}.home-links-grid .site-icon img{width:22px!important;height:22px!important}.home-links-grid a>span:last-child{font-size:9px!important}.week-row{grid-template-columns:56px minmax(0,1fr) auto 42px!important;gap:8px!important}.music-card{padding:12px!important}.music-main{grid-template-columns:78px minmax(0,1fr)!important;gap:10px!important;margin-top:4px!important}.album-art,.album-image{width:78px!important;height:62px!important;max-width:78px!important;max-height:62px!important}.progress,.timecodes{margin-left:88px!important;width:calc(100% - 88px)!important;max-width:calc(100% - 88px)!important}.controls{gap:12px!important}.controls .play{width:34px!important;height:34px!important}
 }
 
 /* Mobile Home intentionally keeps only the essentials. */
-@media (max-width:820px){
-  .dashboard-grid .brain-card,.dashboard-grid .home-links-card,.dashboard-grid .music-card,.dashboard-grid .warnings-card{display:none!important}
-}
+@media (max-width:820px){.dashboard-grid .brain-card,.dashboard-grid .home-links-card,.dashboard-grid .music-card,.dashboard-grid .warnings-card{display:none!important}}
