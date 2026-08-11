@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Homebase house heart icon">
+  <g fill="none" stroke="#f6a28f" stroke-width="34" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M92 247 236 103a30 30 0 0 1 42 0l61 61v-36h63v99l18 20c13 14 3 37-16 37h-27v104c0 28-22 50-50 50H186c-28 0-50-22-50-50V284h-28c-19 0-29-23-16-37Z"/>
+    <path d="M256 364c-18-16-76-59-76-107 0-30 22-52 50-52 15 0 29 7 38 20 9-13 23-20 38-20 28 0 50 22 50 52 0 48-58 91-76 107l-12 10Z"/>
+  </g>
+</svg>
