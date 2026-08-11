@@ -1,0 +1,129 @@
+/* Final landscape desktop override for browser-sized windows around 900–1180px wide. */
+@media (min-width:900px) and (max-width:1180px) and (orientation:landscape){
+  .page-shell{
+    height:calc(100vh - 16px)!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    padding-bottom:0!important;
+  }
+
+  .dashboard-grid{
+    width:100%!important;
+    max-width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    display:grid!important;
+    grid-template-columns:repeat(14,minmax(0,1fr))!important;
+    grid-template-areas:
+      "clock clock clock clock todo todo todo todo todo todo week week week week"
+      "birthdays birthdays birthdays birthdays loa loa loa warnings warnings warnings links links links links"
+      "music music music music music music music music music music music music music music"!important;
+    grid-template-rows:minmax(205px,.9fr) minmax(245px,1.15fr) minmax(138px,.58fr)!important;
+    gap:12px!important;
+    align-items:stretch!important;
+    overflow:hidden!important;
+  }
+
+  .clock-card{grid-area:clock!important}
+  .todo-card{grid-area:todo!important}
+  .week-card{grid-area:week!important}
+  .birthdays-card{grid-area:birthdays!important}
+  .loa-card{grid-area:loa!important}
+  .warnings-card{grid-area:warnings!important}
+  .home-links-card{grid-area:links!important}
+  .music-card{grid-area:music!important}
+
+  .clock-card,.todo-card,.week-card,.birthdays-card,.loa-card,.warnings-card,.home-links-card,.music-card{
+    width:100%!important;
+    height:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    align-self:stretch!important;
+  }
+
+  .panel{padding:15px!important}
+  .panel header{min-height:28px!important}
+  .panel h2{font-size:14px!important}
+
+  .todo-card .task-list,
+  .week-card .week-events,
+  .birthdays-card .people-list,
+  .loa-card .cc-list,
+  .warnings-card .cc-list{
+    min-height:0!important;
+    max-height:calc(100% - 46px)!important;
+    overflow:auto!important;
+    scrollbar-width:thin;
+  }
+
+  .todo-card .task-list{margin-top:10px!important}
+  .todo-card .task-row{min-height:35px!important}
+  .todo-card .task-text{font-size:12px!important}
+  .todo-decor{display:none!important}
+
+  .clock-card{padding:16px!important}
+  .day-script{font-size:21px!important}
+  .big-time{font-size:43px!important;margin:5px 0 2px!important}
+  .date-label{font-size:14px!important}
+  .divider{margin:9px 0!important}
+  .weather-line{gap:9px!important}
+  .weather-emoji{font-size:29px!important}
+  .weather-line strong{font-size:18px!important}
+  .weather-line span{font-size:12px!important}
+  .weather-line small{font-size:9px!important}
+  .weather-meta{font-size:9px!important;margin:4px 0 0 39px!important}
+
+  .week-events{gap:6px!important;margin-top:9px!important}
+  .week-event{min-height:34px!important;padding:7px 8px!important}
+  .week-event span,.week-event strong{font-size:10px!important}
+
+  .people-list{margin-top:10px!important}
+  .person-row{min-height:42px!important}
+  .cc-card{padding:14px!important}
+  .cc-list{gap:6px!important;margin-top:9px!important}
+  .cc-row{min-height:42px!important;padding:6px 7px!important}
+  .cc-footer{padding-top:7px!important;margin-top:7px!important;font-size:10px!important}
+
+  .home-links-card{padding:14px 15px!important}
+  .home-links-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:10px 16px!important;
+    margin-top:9px!important;
+  }
+  .home-links-grid .site-icon{width:29px!important;height:29px!important}
+  .home-links-grid .site-icon img{width:23px!important;height:23px!important}
+  .home-links-grid a>span:last-child{font-size:10px!important}
+
+  .music-card{padding:11px 15px!important}
+  .music-main{
+    margin-top:2px!important;
+    grid-template-columns:92px minmax(0,1fr)!important;
+    gap:14px!important;
+    align-items:center!important;
+  }
+  .album-art,.album-image{width:92px!important;height:68px!important;max-width:92px!important;max-height:68px!important}
+  .song-info,.music-info{min-width:0!important;overflow:hidden!important}
+  .progress,.timecodes{margin-left:106px!important;width:calc(100% - 106px)!important;max-width:calc(100% - 106px)!important}
+  .controls{margin-top:0!important;gap:17px!important;justify-content:center!important;flex-wrap:nowrap!important}
+  .controls .play{width:36px!important;height:36px!important}
+}
+
+@media (min-width:900px) and (max-width:1180px) and (orientation:landscape) and (max-height:760px){
+  .dashboard-grid{
+    grid-template-rows:minmax(175px,.9fr) minmax(205px,1fr) 122px!important;
+    gap:10px!important;
+  }
+  .panel{padding:12px!important}
+  .clock-card{padding:13px!important}
+  .day-script{font-size:18px!important}
+  .big-time{font-size:36px!important}
+  .weather-emoji{font-size:24px!important}
+  .home-links-grid{gap:6px 12px!important;margin-top:6px!important}
+  .home-links-grid .site-icon{width:25px!important;height:25px!important}
+  .home-links-grid .site-icon img{width:20px!important;height:20px!important}
+  .music-main{grid-template-columns:74px minmax(0,1fr)!important;gap:11px!important}
+  .album-art,.album-image{width:74px!important;height:54px!important}
+  .progress,.timecodes{margin-left:85px!important;width:calc(100% - 85px)!important;max-width:calc(100% - 85px)!important}
+  .controls .play{width:31px!important;height:31px!important}
+}
