@@ -13,11 +13,11 @@
     height:100%!important;
     min-height:0!important;
     display:grid!important;
-    grid-template-columns:repeat(14,minmax(0,1fr))!important;
+    grid-template-columns:repeat(12,minmax(0,1fr))!important;
     grid-template-areas:
-      "clock clock clock clock todo todo todo todo todo todo week week week week"
-      "birthdays birthdays birthdays birthdays birthdays loa loa loa loa warnings warnings warnings warnings warnings"
-      "music music music music music music music music music links links links links links"!important;
+      "clock clock clock todo todo todo todo todo week week week week"
+      "birthdays birthdays birthdays birthdays loa loa loa loa warnings warnings warnings warnings"
+      "music music music music music music music links links links links links"!important;
     grid-template-rows:minmax(205px,.9fr) minmax(245px,1.15fr) minmax(150px,.66fr)!important;
     gap:12px!important;
     align-items:stretch!important;
