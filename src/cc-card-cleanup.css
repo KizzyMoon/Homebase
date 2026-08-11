@@ -1,0 +1,9 @@
+.dashboard-grid .loa-card .cc-row .avatar-dot,
+.dashboard-grid .warnings-card .cc-row .avatar-dot{
+  display:none!important;
+}
+
+.dashboard-grid .loa-card .cc-row,
+.dashboard-grid .warnings-card .cc-row{
+  grid-template-columns:minmax(0,1fr) auto!important;
+}
