@@ -31,6 +31,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Bake current Homebase API host into source
+        run: |
+          grep -RIl 'https://developing-wolverine-creatorcore-c7c5c977.koyeb.app' src | xargs -r sed -i 's#https://developing-wolverine-creatorcore-c7c5c977.koyeb.app#https://bright-carley-creatorcore-60c09cd3.koyeb.app#g'
+          grep -RIl 'hour12: false' src | xargs -r sed -i 's/hour12: false/hour12: true/g'
+
       - name: Build
         run: npm run build
 
