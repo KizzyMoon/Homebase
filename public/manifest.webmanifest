@@ -1,0 +1,17 @@
+{
+  "name": "Homebase",
+  "short_name": "Homebase",
+  "start_url": "/Homebase/",
+  "scope": "/Homebase/",
+  "display": "standalone",
+  "background_color": "#0f0d0c",
+  "theme_color": "#0f0d0c",
+  "icons": [
+    {
+      "src": "/Homebase/homebase-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
