@@ -1,4 +1,4 @@
-/* Final landscape desktop override for browser-sized windows around 900–1180px wide. */
+/* Landscape desktop override for browser-sized windows around 900–1180px wide. */
 @media (min-width:900px) and (max-width:1180px) and (orientation:landscape){
   .page-shell{
     height:calc(100vh - 16px)!important;
@@ -16,9 +16,9 @@
     grid-template-columns:repeat(14,minmax(0,1fr))!important;
     grid-template-areas:
       "clock clock clock clock todo todo todo todo todo todo week week week week"
-      "birthdays birthdays birthdays birthdays loa loa loa warnings warnings warnings links links links links"
-      "music music music music music music music music music music music music music music"!important;
-    grid-template-rows:minmax(205px,.9fr) minmax(245px,1.15fr) minmax(138px,.58fr)!important;
+      "birthdays birthdays birthdays birthdays birthdays loa loa loa loa warnings warnings warnings warnings warnings"
+      "music music music music music music music music music links links links links links"!important;
+    grid-template-rows:minmax(205px,.9fr) minmax(245px,1.15fr) minmax(150px,.66fr)!important;
     gap:12px!important;
     align-items:stretch!important;
     overflow:hidden!important;
@@ -85,15 +85,16 @@
   .cc-row{min-height:42px!important;padding:6px 7px!important}
   .cc-footer{padding-top:7px!important;margin-top:7px!important;font-size:10px!important}
 
-  .home-links-card{padding:14px 15px!important}
+  .home-links-card{padding:12px 14px!important}
   .home-links-grid{
-    grid-template-columns:repeat(2,minmax(0,1fr))!important;
-    gap:10px 16px!important;
-    margin-top:9px!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:7px 9px!important;
+    margin-top:7px!important;
   }
-  .home-links-grid .site-icon{width:29px!important;height:29px!important}
-  .home-links-grid .site-icon img{width:23px!important;height:23px!important}
-  .home-links-grid a>span:last-child{font-size:10px!important}
+  .home-links-grid a{padding:2px!important;gap:3px!important}
+  .home-links-grid .site-icon{width:27px!important;height:27px!important}
+  .home-links-grid .site-icon img{width:22px!important;height:22px!important}
+  .home-links-grid a>span:last-child{font-size:9px!important}
 
   .music-card{padding:11px 15px!important}
   .music-main{
@@ -111,7 +112,7 @@
 
 @media (min-width:900px) and (max-width:1180px) and (orientation:landscape) and (max-height:760px){
   .dashboard-grid{
-    grid-template-rows:minmax(175px,.9fr) minmax(205px,1fr) 122px!important;
+    grid-template-rows:minmax(175px,.9fr) minmax(195px,1fr) 128px!important;
     gap:10px!important;
   }
   .panel{padding:12px!important}
@@ -119,9 +120,10 @@
   .day-script{font-size:18px!important}
   .big-time{font-size:36px!important}
   .weather-emoji{font-size:24px!important}
-  .home-links-grid{gap:6px 12px!important;margin-top:6px!important}
-  .home-links-grid .site-icon{width:25px!important;height:25px!important}
-  .home-links-grid .site-icon img{width:20px!important;height:20px!important}
+  .home-links-card{padding:9px 11px!important}
+  .home-links-grid{gap:4px 7px!important;margin-top:4px!important}
+  .home-links-grid .site-icon{width:23px!important;height:23px!important}
+  .home-links-grid .site-icon img{width:19px!important;height:19px!important}
   .music-main{grid-template-columns:74px minmax(0,1fr)!important;gap:11px!important}
   .album-art,.album-image{width:74px!important;height:54px!important}
   .progress,.timecodes{margin-left:85px!important;width:calc(100% - 85px)!important;max-width:calc(100% - 85px)!important}
