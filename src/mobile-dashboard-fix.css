@@ -52,17 +52,18 @@
     overflow:hidden!important;
   }
 
-  /* Mobile order requested: date/weather, to-do, week, birthdays, LOAs, warnings. */
+  /* Mobile order: essentials first, then Quick Links at the bottom. */
   .clock-card{order:1!important}
   .todo-card{order:2!important}
   .week-card{order:3!important}
   .birthdays-card{order:4!important}
   .loa-card{order:5!important}
   .warnings-card{order:6!important;display:block!important}
+  .home-links-card{order:7!important;display:block!important}
 
-  .brain-card,.music-card,.home-links-card{display:none!important}
+  .brain-card,.music-card{display:none!important}
 
-  .clock-card,.todo-card,.week-card,.birthdays-card,.loa-card,.warnings-card{
+  .clock-card,.todo-card,.week-card,.birthdays-card,.loa-card,.warnings-card,.home-links-card{
     position:relative!important;
     left:auto!important;
     right:auto!important;
@@ -72,7 +73,7 @@
   }
 
   .clock-card{padding:14px 16px!important}
-  .todo-card,.week-card,.birthdays-card,.loa-card,.warnings-card{padding:14px!important}
+  .todo-card,.week-card,.birthdays-card,.loa-card,.warnings-card,.home-links-card{padding:14px!important}
 
   .task-list,.week-events,.people-list,.cc-list{
     width:100%!important;
@@ -86,6 +87,37 @@
     max-width:100%!important;
     min-width:0!important;
     box-sizing:border-box!important;
+  }
+
+  .home-links-grid{
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:10px!important;
+    width:100%!important;
+    margin-top:10px!important;
+  }
+
+  .home-links-grid a{
+    min-width:0!important;
+    padding:6px 2px!important;
+  }
+
+  .home-links-grid .site-icon{
+    width:32px!important;
+    height:32px!important;
+  }
+
+  .home-links-grid .site-icon img{
+    width:25px!important;
+    height:25px!important;
+  }
+
+  .home-links-grid a > span:last-child{
+    max-width:100%!important;
+    font-size:10px!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
   }
 
   .sidebar{
@@ -105,4 +137,5 @@
   .shell{padding:6px 6px 78px!important}
   .sidebar{left:6px!important;right:6px!important;bottom:6px!important}
   .dashboard-grid{gap:10px!important}
+  .home-links-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important}
 }
