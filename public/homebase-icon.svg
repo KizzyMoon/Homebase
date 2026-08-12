@@ -1,6 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Homebase house heart icon">
-  <g fill="none" stroke="#f6a28f" stroke-width="34" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M92 247 236 103a30 30 0 0 1 42 0l61 61v-36h63v99l18 20c13 14 3 37-16 37h-27v104c0 28-22 50-50 50H186c-28 0-50-22-50-50V284h-28c-19 0-29-23-16-37Z"/>
-    <path d="M256 364c-18-16-76-59-76-107 0-30 22-52 50-52 15 0 29 7 38 20 9-13 23-20 38-20 28 0 50 22 50 52 0 48-58 91-76 107l-12 10Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Homebase laptop heart icon">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="72%">
+      <stop offset="0%" stop-color="#261d19"/>
+      <stop offset="100%" stop-color="#171311"/>
+    </radialGradient>
+    <linearGradient id="peach" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffb18f"/>
+      <stop offset="100%" stop-color="#ef8f7c"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="496" height="496" rx="108" fill="url(#bg)" stroke="#5b3a30" stroke-width="6"/>
+  <g fill="none" stroke="url(#peach)" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="126" y="132" width="260" height="190" rx="24" stroke-width="24"/>
+    <path d="M100 330h312c14 0 24 12 19 25-10 27-35 43-69 43H150c-34 0-59-16-69-43-5-13 5-25 19-25Z" stroke-width="24"/>
+    <path d="M238 363h36" stroke-width="14"/>
   </g>
+  <path d="M256 280c-15-13-62-49-62-88 0-26 19-45 43-45 12 0 24 6 31 16 8-10 19-16 32-16 24 0 43 19 43 45 0 39-47 75-62 88l-13 11Z" fill="url(#peach)"/>
 </svg>
