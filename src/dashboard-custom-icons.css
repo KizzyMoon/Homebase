@@ -34,11 +34,11 @@
   border-radius:4px;
 }
 
-/* Birthday card follows the purple balloon accent. */
+/* Birthday card follows the purple balloon accent without adding a purple glow/hue to the card surface. */
 .dashboard-grid .birthdays-card {
   border-color:rgba(193,140,233,.5)!important;
-  background:linear-gradient(180deg,rgba(193,140,233,.05),rgba(193,140,233,.012) 45%,transparent 100%),#171311!important;
-  box-shadow:inset 0 0 0 1px rgba(193,140,233,.03)!important;
+  background:#171311!important;
+  box-shadow:none!important;
 }
 .dashboard-grid .birthdays-card h2,
 .dashboard-grid .birthdays-card .celebrate {
