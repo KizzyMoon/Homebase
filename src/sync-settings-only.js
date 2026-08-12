@@ -1,9 +1,7 @@
 (function () {
   const style = document.createElement("style");
   style.textContent = `
-    .homebase-account {
-      display: none !important;
-    }
+    .homebase-account { display: none !important; }
 
     #homebase-sync-slot {
       width: 100%;
@@ -22,23 +20,16 @@
     }
 
     @media (max-width: 700px) {
-      #homebase-sync-slot {
-        margin-bottom: 14px;
-      }
-
+      #homebase-sync-slot { margin-bottom: 14px; }
       #homebase-sync-slot .homebase-account.homebase-settings-sync-visible {
         gap: 10px !important;
         padding: 12px !important;
       }
-
       #homebase-sync-slot .homebase-account-copy {
         flex: 1 1 auto;
         min-width: 0;
       }
-
-      #homebase-sync-slot .homebase-account button {
-        flex: 0 0 auto;
-      }
+      #homebase-sync-slot .homebase-account button { flex: 0 0 auto; }
     }
   `;
   document.head.appendChild(style);
@@ -48,21 +39,36 @@
     return String(active?.textContent || "").trim().toLowerCase() === "settings";
   }
 
+  function getSettingsPage() {
+    if (!settingsIsOpen()) return null;
+    return document.querySelector(".page-shell .subpage");
+  }
+
+  function ensureSlot() {
+    const page = getSettingsPage();
+    if (!page) return null;
+    let slot = page.querySelector("#homebase-sync-slot");
+    if (slot) return slot;
+    slot = document.createElement("div");
+    slot.id = "homebase-sync-slot";
+    const firstPanel = page.querySelector(".manage-panel");
+    if (firstPanel) page.insertBefore(slot, firstPanel);
+    else page.appendChild(slot);
+    return slot;
+  }
+
   function updateVisibility() {
     const control = document.querySelector("[data-homebase-account]");
     if (!control) return;
-
     const open = settingsIsOpen();
-    const slot = document.getElementById("homebase-sync-slot");
-
-    if (open && slot && control.parentElement !== slot) {
-      slot.appendChild(control);
+    if (open) {
+      const slot = ensureSlot();
+      if (slot && control.parentElement !== slot) slot.appendChild(control);
     }
-
     control.classList.toggle("homebase-settings-sync-visible", open);
   }
 
-  const observer = new MutationObserver(updateVisibility);
+  const observer = new MutationObserver(() => requestAnimationFrame(updateVisibility));
   observer.observe(document.documentElement, {
     subtree: true,
     childList: true,
