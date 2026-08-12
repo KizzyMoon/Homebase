@@ -5,18 +5,39 @@
       display: none !important;
     }
 
-    .homebase-account.homebase-settings-sync-visible {
+    #homebase-sync-slot {
+      width: 100%;
+      margin: 0 0 18px;
+    }
+
+    #homebase-sync-slot .homebase-account.homebase-settings-sync-visible {
       display: flex !important;
-      position: fixed !important;
-      top: 18px !important;
-      right: 18px !important;
-      z-index: 1000 !important;
+      position: static !important;
+      inset: auto !important;
+      width: 100% !important;
+      max-width: none !important;
+      box-sizing: border-box !important;
+      margin: 0 !important;
+      z-index: auto !important;
     }
 
     @media (max-width: 700px) {
-      .homebase-account.homebase-settings-sync-visible {
-        top: 10px !important;
-        right: 10px !important;
+      #homebase-sync-slot {
+        margin-bottom: 14px;
+      }
+
+      #homebase-sync-slot .homebase-account.homebase-settings-sync-visible {
+        gap: 10px !important;
+        padding: 12px !important;
+      }
+
+      #homebase-sync-slot .homebase-account-copy {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+
+      #homebase-sync-slot .homebase-account button {
+        flex: 0 0 auto;
       }
     }
   `;
@@ -30,7 +51,15 @@
   function updateVisibility() {
     const control = document.querySelector("[data-homebase-account]");
     if (!control) return;
-    control.classList.toggle("homebase-settings-sync-visible", settingsIsOpen());
+
+    const open = settingsIsOpen();
+    const slot = document.getElementById("homebase-sync-slot");
+
+    if (open && slot && control.parentElement !== slot) {
+      slot.appendChild(control);
+    }
+
+    control.classList.toggle("homebase-settings-sync-visible", open);
   }
 
   const observer = new MutationObserver(updateVisibility);
