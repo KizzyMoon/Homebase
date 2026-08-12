@@ -34,7 +34,9 @@ const persistenceReady = setPersistence(auth, browserLocalPersistence).catch((er
   return null;
 });
 
-const DB = "(default)";
+// This project uses a named Firestore database whose ID is `default`.
+// `(default)` is a different database ID and does not exist in this project.
+const DB = "default";
 const BASE = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/${encodeURIComponent(DB)}/documents/users`;
 const KEYS = [
   "homebase.tasks",
@@ -79,113 +81,88 @@ function localSnapshot() {
   for (const key of KEYS) {
     const field = fieldFor(key);
     const raw = localStorage.getItem(key);
-    if (raw == null) { out[field] = clone(EMPTY[field]); continue; }
+    if (raw == null) {
+      out[field] = clone(EMPTY[field]);
+      continue;
+    }
     try { out[field] = JSON.parse(raw); }
     catch { out[field] = clone(EMPTY[field]); }
   }
   return out;
 }
 
-function decodeValue(value) {
-  if (!value || typeof value !== "object") return null;
-  if ("stringValue" in value) return value.stringValue;
-  if ("integerValue" in value) return Number(value.integerValue);
-  if ("doubleValue" in value) return Number(value.doubleValue);
-  if ("booleanValue" in value) return Boolean(value.booleanValue);
-  if ("nullValue" in value) return null;
-  if ("timestampValue" in value) return value.timestampValue;
-  if ("arrayValue" in value) return (value.arrayValue?.values || []).map(decodeValue);
-  if ("mapValue" in value) {
-    const out = {};
-    for (const [k, child] of Object.entries(value.mapValue?.fields || {})) out[k] = decodeValue(child);
-    return out;
-  }
-  return null;
-}
-
-function decodeDocument(raw) {
-  const fields = raw?.fields || {};
-  const legacy = fields.dashboard ? (decodeValue(fields.dashboard) || {}) : {};
-  let json = {};
-  if (fields.dashboardJson?.stringValue) {
-    try {
-      const parsed = JSON.parse(fields.dashboardJson.stringValue);
-      if (parsed && typeof parsed === "object") json = parsed;
-    } catch {}
-  }
-  return {
-    dashboard: { ...legacy, ...json },
-    clientUpdatedAt: Number(fields.clientUpdatedAt?.integerValue || 0),
-    updatedBy: fields.updatedBy?.stringValue || "",
-    schemaVersion: Number(fields.schemaVersion?.integerValue || 0)
-  };
-}
-
-function normalize(data) {
+function normalize(snapshot = {}) {
   const out = {};
   for (const key of KEYS) {
     const field = fieldFor(key);
-    out[field] = Object.prototype.hasOwnProperty.call(data || {}, field) ? data[field] : clone(EMPTY[field]);
+    const value = snapshot[field];
+    if (field === "spotifyConfig") out[field] = value && typeof value === "object" && !Array.isArray(value) ? value : clone(EMPTY[field]);
+    else out[field] = Array.isArray(value) ? value : clone(EMPTY[field]);
   }
   return out;
 }
 
 function same(a, b) {
-  try { return JSON.stringify(a) === JSON.stringify(b); }
-  catch { return false; }
+  return JSON.stringify(normalize(a)) === JSON.stringify(normalize(b));
 }
 
-async function authHeaders(force = false) {
-  if (!user) throw new Error("No signed-in Google user");
-  const token = await user.getIdToken(force);
-  return { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+async function token() {
+  if (!user) throw new Error("Not signed in");
+  return user.getIdToken();
+}
+async function request(method = "GET", body = null) {
+  const idToken = await token();
+  const options = { method, headers: { Authorization: `Bearer ${idToken}` } };
+  if (body != null) {
+    options.headers["Content-Type"] = "application/json";
+    options.body = JSON.stringify(body);
+  }
+  return fetch(docUrl(), options);
 }
 
-async function request(method, body) {
-  const run = async (forceToken = false) => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
-    try {
-      return await fetch(docUrl(), {
-        method,
-        headers: await authHeaders(forceToken),
-        body: body ? JSON.stringify(body) : undefined,
-        cache: "no-store",
-        signal: controller.signal
-      });
-    } finally { clearTimeout(timeout); }
-  };
-
-  let response = await run(false);
-  if (response.status === 401) response = await run(true);
-  return response;
+function fromFirestoreValue(value) {
+  if (!value || typeof value !== "object") return null;
+  if (Object.prototype.hasOwnProperty.call(value, "stringValue")) return value.stringValue;
+  if (Object.prototype.hasOwnProperty.call(value, "integerValue")) return Number(value.integerValue || 0);
+  return null;
 }
 
 async function readCloud() {
   const response = await request("GET");
   if (response.status === 404) return null;
   if (!response.ok) {
-    let message = `Firestore HTTP ${response.status}`;
+    let message = `Firestore read HTTP ${response.status}`;
     try { message = (await response.json())?.error?.message || message; } catch {}
     throw new Error(message);
   }
-  return decodeDocument(await response.json());
+  const data = await response.json();
+  const fields = data.fields || {};
+  const raw = fromFirestoreValue(fields.dashboardJson);
+  let dashboard = {};
+  try { dashboard = raw ? JSON.parse(raw) : {}; } catch {}
+  return {
+    dashboard,
+    clientUpdatedAt: Number(fromFirestoreValue(fields.clientUpdatedAt) || 0),
+    updatedBy: String(fromFirestoreValue(fields.updatedBy) || ""),
+    schemaVersion: Number(fromFirestoreValue(fields.schemaVersion) || 0)
+  };
 }
 
 function shortError(error) {
-  if (error?.name === "AbortError") return "request timed out";
-  const code = error?.code ? String(error.code).replace(/^auth\//, "") : "";
-  const msg = error?.message || String(error || "Unknown error");
-  return code || msg.replace(/^Firebase:\s*/i, "").slice(0, 90);
+  const text = String(error?.message || error || "Unknown error").replace(/\s+/g, " ").trim();
+  return text.length > 220 ? `${text.slice(0,217)}…` : text;
 }
-
-function status(text, state = "", detail = "") {
-  const el = document.querySelector("[data-homebase-sync-status]");
-  const detailEl = document.querySelector("[data-homebase-sync-detail]");
-  if (el) {
-    el.textContent = text;
-    el.dataset.state = state;
-    el.title = detail || text;
+function accountEls() {
+  return {
+    statusEl: document.querySelector("[data-homebase-sync-status]"),
+    detailEl: document.querySelector("[data-homebase-sync-detail]")
+  };
+}
+function status(label, state = "", detail = "") {
+  const { statusEl, detailEl } = accountEls();
+  if (statusEl) {
+    statusEl.textContent = label;
+    statusEl.dataset.state = state;
   }
   if (detailEl) detailEl.textContent = detail || "";
 }
