@@ -45,6 +45,13 @@
   color:#c18ce9!important;
 }
 
+/* Remove helper/footer text Kizzy doesn't want on these dashboard cards. */
+.dashboard-grid .birthdays-card .empty-state,
+.dashboard-grid .birthdays-card .celebrate,
+.dashboard-grid .warnings-card .cc-footer {
+  display:none!important;
+}
+
 /* Match the LOA title to the LOA card's green accent. */
 .dashboard-grid .loa-card header h2 {
   color:#a9bd53!important;
