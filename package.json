@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "vite --host 127.0.0.1",
-    "build": "vite build",
+    "build": "node scripts/generate-app-icon.mjs && vite build",
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
