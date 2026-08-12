@@ -21,10 +21,10 @@
 }
 
 .todo-card header > div::before {
-  background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3QgeD0iMi41IiB5PSIyLjUiIHdpZHRoPSIyNyIgaGVpZ2h0PSIyNyIgcng9IjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTkgMTYuNWw1IDVMMjQgMTEiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=");
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2.5' y='2.5' width='27' height='27' rx='5' fill='none' stroke='%23d8bd72' stroke-width='3'/%3E%3Cpath d='M9 16.5l5 5L24 11' fill='none' stroke='%23d8bd72' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 .week-card header > div::before {
-  background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3QgeD0iMiIgeT0iNSIgd2lkdGg9IjI4IiBoZWlnaHQ9IjI1IiByeD0iMyIgZmlsbD0iI2VhZThlOCIvPjxwYXRoIGQ9Ik0yIDhhMyAzIDAgMCAxIDMtM2gyMmEzIDMgMCAwIDEgMyAzdjZIMnoiIGZpbGw9IiNkMjJlMmUiLz48cmVjdCB4PSI3IiB5PSIxIiB3aWR0aD0iMyIgaGVpZ2h0PSI4IiByeD0iMS41IiBmaWxsPSIjNDg0ODY4Ii8+PHJlY3QgeD0iMTUiIHk9IjEiIHdpZHRoPSIzIiBoZWlnaHQ9IjgiIHJ4PSIxLjUiIGZpbGw9IiM0ODQ4NjgiLz48cmVjdCB4PSIyMyIgeT0iMSIgd2lkdGg9IjMiIGhlaWdodD0iOCIgcng9IjEuNSIgZmlsbD0iIzQ4NDg2OCIvPjxnIGZpbGw9IiM0ODQ4NjgiPjxyZWN0IHg9IjYiIHk9IjE3IiB3aWR0aD0iNSIgaGVpZ2h0PSI1IiByeD0iMSIvPjxyZWN0IHg9IjE0IiB5PSIxNyIgd2lkdGg9IjUiIGhlaWdodD0iNSIgcng9IjEiLz48cmVjdCB4PSI2IiB5PSIyNCIgd2lkdGg9IjUiIGhlaWdodD0iNSIgcng9IjEiLz48cmVjdCB4PSIxNCIgeT0iMjQiIHdpZHRoPSI1IiBoZWlnaHQ9IjUiIHJ4PSIxIi8+PC9nPjxwYXRoIGQ9Ik0yMiAyMGwyLjUgMi41TDI5IDE3LjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2QyMmUyZSIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==");
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='none' stroke='%237fa9c4' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='26' height='24' rx='3'/%3E%3Cpath d='M3 12h26M9 2v7M23 2v7M9 17h3M15 17h3M21 17h3M9 23h3M15 23h3'/%3E%3C/g%3E%3C/svg%3E");
 }
 .birthdays-card header > div::before {
   background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHBhdGggZD0iTTE2IDJDOS41IDIgNSA2LjcgNSAxMi41IDUgMjAgMTIuMiAyNC40IDE2IDI2YzMuOC0xLjYgMTEtNiAxMS0xMy41QzI3IDYuNyAyMi41IDIgMTYgMnoiIGZpbGw9IiNjMThjZTkiLz48cGF0aCBkPSJNMTYgMjZjLTEgMS4yLTEuOCAyLTIuNyAyLjhoNS40Yy0uOS0uOC0xLjctMS42LTIuNy0yLjh6IiBmaWxsPSIjYzE4Y2U5Ii8+PHBhdGggZD0iTTE2IDI5YzIuMyAxLjQgMi43IDMgMS41IDMiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2MxOGNlOSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=");
@@ -40,9 +40,26 @@
   border-radius:0;
 }
 
-/* Birthday card follows the purple balloon accent without adding a purple glow/hue to the card surface. */
+/* Card accents: heading/icon defines the colour; border follows it at the same restrained intensity. */
+.dashboard-grid .todo-card {
+  border:1px solid rgba(216,189,114,.50)!important;
+  box-shadow:none!important;
+}
+.dashboard-grid .todo-card header h2,
+.dashboard-grid .todo-card .add-task {
+  color:#d8bd72!important;
+}
+
+.dashboard-grid .week-card {
+  border:1px solid rgba(127,169,196,.50)!important;
+  box-shadow:none!important;
+}
+.dashboard-grid .week-card header h2 {
+  color:#7fa9c4!important;
+}
+
 .dashboard-grid .birthdays-card {
-  border-color:rgba(193,140,233,.5)!important;
+  border:1px solid rgba(193,140,233,.50)!important;
   background:#171311!important;
   box-shadow:none!important;
 }
@@ -51,16 +68,37 @@
   color:#c18ce9!important;
 }
 
+.dashboard-grid .loa-card {
+  border:1px solid rgba(169,189,83,.50)!important;
+  box-shadow:none!important;
+}
+.dashboard-grid .loa-card header h2 {
+  color:#a9bd53!important;
+}
+
+.dashboard-grid .warnings-card {
+  border:1px solid rgba(255,126,48,.50)!important;
+  box-shadow:none!important;
+}
+.dashboard-grid .warnings-card header h2 {
+  color:#ff7e30!important;
+}
+
+/* Keep the lower cards subtle too: border follows the existing heading accent, no neon treatment. */
+.dashboard-grid .now-playing-card {
+  border-width:1px!important;
+  box-shadow:none!important;
+}
+.dashboard-grid .quick-links-card {
+  border-width:1px!important;
+  box-shadow:none!important;
+}
+
 /* Remove helper/footer text Kizzy doesn't want on these dashboard cards. */
 .dashboard-grid .birthdays-card .empty-state,
 .dashboard-grid .birthdays-card .celebrate,
 .dashboard-grid .warnings-card .cc-footer {
   display:none!important;
-}
-
-/* Match the LOA title to the LOA card's green accent. */
-.dashboard-grid .loa-card header h2 {
-  color:#a9bd53!important;
 }
 
 @media (max-width:820px) {
