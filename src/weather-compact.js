@@ -2,64 +2,67 @@
   const style = document.createElement('style');
   style.textContent = `
     .clock-card .weather-line.homebase-weather-compact {
-      display: grid !important;
-      grid-template-columns: auto 1fr !important;
-      column-gap: 10px !important;
-      align-items: start !important;
+      display:grid!important;
+      grid-template-columns:auto minmax(0,1fr)!important;
+      column-gap:10px!important;
+      align-items:start!important;
     }
     .clock-card .weather-line.homebase-weather-compact > div {
-      display: flex !important;
-      flex-direction: column !important;
-      gap: 3px !important;
-      min-width: 0 !important;
+      display:flex!important;
+      flex-direction:column!important;
+      gap:3px!important;
+      min-width:0!important;
     }
     .clock-card .weather-line.homebase-weather-compact .weather-temp-row {
-      display: flex !important;
-      align-items: baseline !important;
-      gap: 7px !important;
-      white-space: nowrap !important;
+      display:flex!important;
+      align-items:baseline!important;
+      gap:6px!important;
+      white-space:nowrap!important;
     }
-    .clock-card .weather-line.homebase-weather-compact .weather-temp-row strong {
-      font-size: inherit !important;
+    .clock-card .weather-line.homebase-weather-compact .weather-temp-row strong,
+    .clock-card .weather-line.homebase-weather-compact .weather-feels {
+      font-size:1em!important;
+      line-height:1.2!important;
     }
-    .clock-card .weather-line.homebase-weather-compact .weather-divider-pipe {
-      opacity: .45;
-    }
-    .clock-card .weather-line.homebase-weather-compact .weather-feels,
+    .clock-card .weather-line.homebase-weather-compact .weather-divider-pipe { opacity:.5; }
+    .clock-card .weather-line.homebase-weather-compact .weather-condition-label,
     .clock-card .weather-line.homebase-weather-compact .weather-rain-chance {
-      color: var(--muted, #c9aaa0);
-      font-size: .82em;
+      font-size:.88em!important;
+      line-height:1.25!important;
     }
-    .clock-card .weather-line.homebase-weather-compact .weather-condition-label {
-      font-size: .92em;
-    }
-    .clock-card .weather-meta.homebase-weather-meta-hidden {
-      display: none !important;
-    }
+    .clock-card .weather-line.homebase-weather-compact .weather-rain-chance { color:var(--muted,#c9aaa0)!important; }
+    .clock-card .weather-meta.homebase-weather-meta-hidden { display:none!important; }
+    .clock-card .weather-line.homebase-weather-compact small { display:none!important; }
   `;
   document.head.appendChild(style);
 
-  function cleanRain(value) {
-    const text = String(value || '').trim();
-    if (!text) return '—';
-    return text.replace(/^Rain\s*/i, '').replace(/^Chance of rain\s*/i, '').trim() || '—';
+  function extractWeather() {
+    const card = document.querySelector('.clock-card');
+    if (!card) return null;
+    const line = card.querySelector('.weather-line');
+    const meta = card.querySelector('.weather-meta');
+    if (!line) return null;
+
+    const current = line.querySelector('strong')?.textContent?.trim() || '—';
+    const conditionNode = [...line.querySelectorAll('span')].find((el) => !el.classList.contains('weather-emoji'));
+    const condition = conditionNode?.textContent?.trim() || 'Weather unavailable';
+    const metaText = meta?.textContent || '';
+    const feelsMatch = metaText.match(/Feels like\s*([^·]+)/i);
+    const rainMatch = metaText.match(/Rain\s*([^·]+)/i);
+    const feels = feelsMatch?.[1]?.trim() || '—';
+    const rain = rainMatch?.[1]?.trim() || '—';
+    return { card, line, meta, current, condition, feels, rain };
   }
 
   function applyWeatherLayout() {
-    const card = document.querySelector('.clock-card');
-    if (!card) return;
-    const line = card.querySelector('.weather-line');
-    const meta = card.querySelector('.weather-meta');
-    if (!line || !meta) return;
-
-    const current = line.querySelector('strong')?.textContent?.trim() || '—';
-    const condition = line.querySelector('span:not(.weather-emoji)')?.textContent?.trim() || 'Weather unavailable';
-    const metaText = meta.textContent || '';
-    const feels = metaText.match(/Feels like\s*([^·]+)/i)?.[1]?.trim() || '—';
-    const rain = cleanRain(metaText.match(/Rain\s*([^·]+)/i)?.[1]);
-
+    const data = extractWeather();
+    if (!data) return;
+    const { line, meta, current, condition, feels, rain } = data;
     const content = line.querySelector('div');
     if (!content) return;
+
+    const wanted = `${current}|${feels}|${condition}|${rain}`;
+    if (content.dataset.weatherCompactState === wanted) return;
 
     content.innerHTML = `
       <div class="weather-temp-row">
@@ -70,24 +73,16 @@
       <span class="weather-condition-label">${condition}</span>
       <span class="weather-rain-chance">Chance of rain ${rain}</span>
     `;
-
+    content.dataset.weatherCompactState = wanted;
     line.classList.add('homebase-weather-compact');
-    meta.classList.add('homebase-weather-meta-hidden');
+    if (meta) meta.classList.add('homebase-weather-meta-hidden');
   }
 
-  let queued = false;
-  const queue = () => {
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(() => {
-      queued = false;
-      applyWeatherLayout();
-    });
-  };
-
+  const queue = () => requestAnimationFrame(applyWeatherLayout);
   const observer = new MutationObserver(queue);
-  observer.observe(document.documentElement, { subtree: true, childList: true, characterData: true });
+  observer.observe(document.documentElement, { subtree:true, childList:true, characterData:true });
   window.addEventListener('DOMContentLoaded', queue);
-  setInterval(queue, 30000);
+  window.addEventListener('load', queue);
+  setInterval(queue, 2000);
   queue();
 })();
