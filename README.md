@@ -1,41 +1,27 @@
-# Homebase
+# Home Base
 
-A cozy personal dashboard starter inspired by warm desk planners, sticky notes, soft night colors, and compact productivity widgets.
+Kizzy's central personal dashboard for GitHub Pages.
 
-## What is included
+## What It Does
 
-- To-do list and filters
-- Today planner card
-- Week at a glance
-- Focus timer with working start/pause/reset
-- Now playing card with a cozy CSS illustration
-- Brain dump notes
-- Quick links
-- Compact reminders and birthday panels
+- Opens the Creators Dashboard, EMS Personal Dashboard, Twitch, YouTube, and To Do Lists.
+- Shows a live local date/time panel.
+- Keeps Today tasks editable and persistent in the browser.
+- Provides a fuller persistent to-do area.
+- Keeps Project Updates editable and persistent.
+- Reads live creator LOA/warning summary data from the existing CC backend when it is available.
+- Links the EMS section to the EMS Personal Dashboard and Basic Treatment Guide.
 
-## Run locally
-
-Install dependencies, then start the local preview:
+## Local Development
 
 ```bash
 npm install
 npm start
 ```
 
-Then open the local URL shown in the terminal.
-
 ## GitHub Pages
 
-This project is published with the included GitHub Actions workflow.
-
-After pushing to GitHub:
-
-1. Open the repository on GitHub.
-2. Go to **Settings** -> **Pages**.
-3. Under **Build and deployment**, set **Source** to **GitHub Actions**.
-4. The included workflow will build and publish the site.
-
-Your page will be available at:
+This repository deploys to:
 
 ```text
 https://kizzymoon.github.io/Homebase/
