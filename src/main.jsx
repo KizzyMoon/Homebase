@@ -146,7 +146,7 @@ function App() {
 function Hero({ now, searchTerm, setSearchTerm, runSearch }) {
   const weekday = now.toLocaleDateString("en-GB", { weekday: "short" }).toUpperCase();
   const date = now.toLocaleDateString("en-GB", { day: "numeric", month: "short" }).toUpperCase();
-  const time = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
+  const time = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).replace(/\s?[AP]M$/i, "");
 
   return (
     <header className="hero">
@@ -175,7 +175,7 @@ function Hero({ now, searchTerm, setSearchTerm, runSearch }) {
 }
 
 function HomePage(props) {
-  const { links, todayTasks, setTodayTasks, projectUpdates, setProjectUpdates, currently, setModal, creatorData, navigate } = props;
+  const { links, todayTasks, setTodayTasks, projectUpdates, setProjectUpdates, setModal, creatorData, navigate } = props;
   return (
     <div className="home-page">
       <SectionTitle>Quick Access</SectionTitle>
@@ -189,7 +189,6 @@ function HomePage(props) {
       <div className="main-grid">
         <TodayCard tasks={todayTasks} setTasks={setTodayTasks} setModal={setModal} />
         <ProjectUpdates updates={projectUpdates} setUpdates={setProjectUpdates} setModal={setModal} creatorData={creatorData} />
-        <CurrentlyCard currently={currently} setModal={setModal} />
       </div>
     </div>
   );
@@ -214,7 +213,7 @@ function QuickTile({ icon, label, tone, href, onClick }) {
 function TodayCard({ tasks, setTasks, setModal }) {
   return (
     <section className="card today-card">
-      <CardHeader title="Today" note="Small steps still count ♡" action={<button onClick={() => setModal({ type: "todayTask" })}><Plus size={16} /> Add</button>} />
+      <CardHeader title="To Do" note="Small steps still count ♡" action={<button onClick={() => setModal({ type: "todayTask" })}><Plus size={16} /> Add</button>} />
       <div className="task-list">
         {tasks.slice(0, 7).length ? tasks.slice(0, 7).map((task) => (
           <div className="task-row" key={task.id}>
