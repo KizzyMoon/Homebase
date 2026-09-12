@@ -230,7 +230,7 @@ function TodayCard({ tasks, setTasks, setModal }) {
 
 function ProjectUpdates({ updates, setModal, creatorData }) {
   const rows = updates.map((item) => item.id === "creators" && !item.text
-    ? { ...item, text: creatorData.status === "Live" || creatorData.status === "Live via fallback" ? `${creatorData.loas.length} on LOA` : creatorData.status }
+    ? { ...item, text: creatorOverviewText(creatorData) }
     : item
   );
   return (
@@ -265,20 +265,44 @@ function CurrentlyCard({ currently, setModal }) {
   );
 }
 
-function CreatorSnapshot({ data, onOpen }) {
+function CreatorTodoCard({ creatorData, action }) {
+  const attentionRows = [
+    ...creatorData.warnings.map((item) => ({
+      id: `warning-${item.discordId || item.name}`,
+      name: item.name,
+      detail: `${item.count} active warnings`,
+      tone: "warning"
+    })),
+    ...creatorData.loas.map((item) => ({
+      id: `loa-${item.name}`,
+      name: item.name,
+      detail: `LOA ${item.start || "Unknown start"} -> ${item.end || "Unknown end"}`,
+      tone: "loa"
+    }))
+  ];
+
   return (
-    <section className="card creator-card">
-      <CardHeader title="Creators" action={<button onClick={onOpen}>Open</button>} />
-      <div className="creator-summary">
-        <div><strong>{data.loas.length}</strong><span>Currently on LOA</span></div>
-        <div><strong>{data.warnings.length}</strong><span>With 2+ warnings</span></div>
-      </div>
-      <p className="data-status">{data.status}</p>
+    <section className="card creator-todo-card">
+      <CardHeader title="CC To Do" note={creatorOverviewText(creatorData)} action={action} />
+      {attentionRows.length ? (
+        <div className="attention-list">
+          {attentionRows.map((item) => (
+            <div className={`attention-row ${item.tone}`} key={item.id}>
+              <span className="status-dot" />
+              <strong>{item.name}</strong>
+              <span>{item.detail}</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="empty">{creatorData.status === "Creator data unavailable" ? "Creator data unavailable." : "No CC warning or LOA items need attention right now."}</p>
+      )}
+      <p className="data-status">{creatorData.status}</p>
     </section>
   );
 }
 
-function TodosPage({ todayTasks, setTodayTasks, todoLists, setTodoLists, setModal, navigate }) {
+function TodosPage({ todayTasks, setTodayTasks, todoLists, setTodoLists, setModal, creatorData, navigate }) {
   return (
     <SubPage title="To Do Lists" onHome={() => navigate("home")}>
       <section className="management-layout">
@@ -296,6 +320,7 @@ function TodosPage({ todayTasks, setTodayTasks, todoLists, setTodoLists, setModa
             </article>
           )) : <p className="empty">Create separate lists for bigger bits, like stream planning or admin chores.</p>}
         </section>
+        <CreatorTodoCard creatorData={creatorData} action={<button onClick={() => navigate("creators")}>Creators</button>} />
       </section>
     </SubPage>
   );
@@ -319,6 +344,7 @@ function ListItems({ list, setTodoLists, setModal }) {
 function CreatorsPage({ links, creatorData, navigate }) {
   return (
     <SubPage title="Creators" onHome={() => navigate("home")}>
+      <CreatorTodoCard creatorData={creatorData} action={<a className="small-link" href={links.creators} target="_blank" rel="noreferrer">Full dashboard <ExternalLink size={14} /></a>} />
       <div className="two-column">
         <section className="card">
           <CardHeader title="Current LOAs" action={<a className="small-link" href={links.creators} target="_blank" rel="noreferrer">Full dashboard <ExternalLink size={14} /></a>} />
@@ -524,7 +550,7 @@ function buildSearchItems(links) {
   return [
     { keywords: ["home", "dashboard"], page: "home" },
     { keywords: ["todo", "to do", "tasks", "lists"], page: "todos" },
-    { keywords: ["creator", "creators", "cc", "loa", "warnings"], page: "creators" },
+    { keywords: ["creator", "creators", "cc", "cc todo", "loa", "warnings", "2 warnings"], page: "creators" },
     { keywords: ["ems", "treatment", "medical"], page: "ems" },
     { keywords: ["links", "settings"], page: "links" },
     { keywords: ["full creators dashboard", "cc dashboard"], url: links.creators },
@@ -551,8 +577,8 @@ async function refreshCreatorData() {
     if (!response.ok) throw new Error(`Summary HTTP ${response.status}`);
     const data = await response.json();
     return {
-      loas: Array.isArray(data.loas) ? data.loas : [],
-      warnings: Array.isArray(data.warnings) ? data.warnings : [],
+      loas: normalizeLoas(data.loas),
+      warnings: normalizeWarnings(data.warnings),
       status: "Live"
     };
   } catch {
@@ -570,6 +596,34 @@ async function refreshCreatorData() {
       return { loas: [], warnings: [], status: "Creator data unavailable" };
     }
   }
+}
+
+function creatorOverviewText(creatorData) {
+  if (creatorData.status !== "Live" && creatorData.status !== "Live via fallback") return creatorData.status;
+  const loaCount = creatorData.loas.length;
+  const warningCount = creatorData.warnings.length;
+  return `${loaCount} on LOA • ${warningCount} with 2+ warnings`;
+}
+
+function normalizeLoas(rows) {
+  return Array.isArray(rows)
+    ? rows.map((item) => ({
+      name: item.name || item.discord_name || item.discordName || "Unknown creator",
+      start: item.start || "",
+      end: item.end || ""
+    })).sort((a, b) => a.name.localeCompare(b.name))
+    : [];
+}
+
+function normalizeWarnings(rows) {
+  return Array.isArray(rows)
+    ? rows.map((item) => ({
+      discordId: item.discordId || item.discord_id || item.id || "",
+      name: item.name || item.discord_name || item.discordName || item.discordId || item.discord_id || "Unknown creator",
+      count: Number(item.count ?? item.warnings ?? item.activeWarnings ?? 0)
+    })).filter((item) => item.count >= 2)
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+    : [];
 }
 
 async function fetchJson(url) {
