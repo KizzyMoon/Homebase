@@ -915,7 +915,8 @@ h1 span {
   .homebase::after,
   .hero-copy,
   .progress-note,
-  .decor-scene {
+  .decor-scene,
+  .section-title {
     display: none;
   }
 
@@ -966,38 +967,29 @@ h1 span {
   }
 
   .clock-box {
-    top: 0.26vw;
+    top: 0;
     right: 0;
     z-index: 4;
-    width: 16.8vw;
+    width: 18.6vw;
     min-width: 0;
-    height: 10.03vw;
-    padding: 2vw 2.3vw;
+    height: 10.2vw;
+    padding: 2.05vw 2.45vw;
     border-radius: 1.3vw 0 0 1.3vw;
-    background: rgba(61, 34, 29, 0.97);
+    background: #3d221d;
     border-color: rgba(229, 159, 142, 0.22);
     box-shadow: 0 1.2vw 3vw rgba(0, 0, 0, 0.34);
   }
 
   .clock-box span {
-    font-size: 1.42vw;
+    font-size: 1.32vw;
     line-height: 1;
-    letter-spacing: 0.34em;
+    letter-spacing: 0.28em;
+    white-space: nowrap;
   }
 
   .clock-box strong {
-    margin-top: 1.35vw;
+    margin-top: 1.45vw;
     font-size: 4.45vw;
-  }
-
-  .section-title {
-    position: absolute;
-    top: 22.95vw;
-    left: 5.47vw;
-    z-index: 3;
-    margin: 0;
-    font-size: 1.1vw;
-    line-height: 1;
   }
 
   .quick-grid {
@@ -1037,9 +1029,9 @@ h1 span {
     z-index: 5;
     border-radius: 0.55vw;
     border-color: rgba(235, 180, 158, 0.22);
-    background: rgba(31, 19, 15, 0.93);
+    background: #20130f;
     box-shadow: none;
-    backdrop-filter: blur(3px);
+    backdrop-filter: none;
     padding: 1.45vw 1.55vw;
   }
 
