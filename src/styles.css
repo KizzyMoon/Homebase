@@ -901,14 +901,16 @@ h1 span {
   }
 
   .homebase {
+    --art-w: max(100vw, 150vh);
+    --u: calc(var(--art-w) / 100);
     width: 100vw;
-    min-height: max(100vh, 66.6667vw);
+    min-height: max(100vh, calc(var(--art-w) * 0.666667));
     padding: 0;
     overflow-x: hidden;
     overflow-y: auto;
     background:
       linear-gradient(rgba(12, 7, 6, 0.03), rgba(12, 7, 6, 0.03)),
-      url("/Homebase/homebase-reference.jpeg") top left / 100vw auto no-repeat;
+      url("/Homebase/homebase-reference.jpeg") top left / var(--art-w) auto no-repeat;
   }
 
   .homebase::before,
@@ -931,13 +933,13 @@ h1 span {
 
   .searchbar {
     position: absolute;
-    top: 16.08vw;
-    left: 20.83vw;
+    top: calc(var(--u) * 16.08);
+    left: calc(var(--u) * 20.83);
     z-index: 4;
-    width: 36.46vw;
-    min-height: 3.52vw;
-    padding: 0 1.5vw;
-    gap: 1vw;
+    width: calc(var(--u) * 36.46);
+    min-height: calc(var(--u) * 3.52);
+    padding: 0 calc(var(--u) * 1.5);
+    gap: calc(var(--u) * 1);
     border-color: transparent;
     background: transparent;
     box-shadow: none;
@@ -949,13 +951,13 @@ h1 span {
   }
 
   .searchbar svg {
-    width: 1.55vw;
-    height: 1.55vw;
+    width: calc(var(--u) * 1.55);
+    height: calc(var(--u) * 1.55);
     color: #f2d7cf;
   }
 
   .searchbar input {
-    font-size: 0.98vw;
+    font-size: calc(var(--u) * 0.98);
   }
 
   .searchbar input::placeholder {
@@ -970,41 +972,41 @@ h1 span {
     top: 0;
     right: 0;
     z-index: 4;
-    width: 18.6vw;
+    width: calc(var(--u) * 18.6);
     min-width: 0;
-    height: 10.2vw;
-    padding: 2.05vw 2.45vw;
-    border-radius: 1.3vw 0 0 1.3vw;
+    height: calc(var(--u) * 10.2);
+    padding: calc(var(--u) * 2.05) calc(var(--u) * 2.45);
+    border-radius: calc(var(--u) * 1.3) 0 0 calc(var(--u) * 1.3);
     background: #3d221d;
     border-color: rgba(229, 159, 142, 0.22);
     box-shadow: 0 1.2vw 3vw rgba(0, 0, 0, 0.34);
   }
 
   .clock-box span {
-    font-size: 1.32vw;
+    font-size: calc(var(--u) * 1.32);
     line-height: 1;
     letter-spacing: 0.28em;
     white-space: nowrap;
   }
 
   .clock-box strong {
-    margin-top: 1.45vw;
-    font-size: 4.45vw;
+    margin-top: calc(var(--u) * 1.45);
+    font-size: calc(var(--u) * 4.45);
   }
 
   .quick-grid {
     position: absolute;
-    top: 24.54vw;
-    left: 5.4vw;
+    top: calc(var(--u) * 24.54);
+    left: calc(var(--u) * 5.4);
     z-index: 4;
-    width: 68.1vw;
+    width: calc(var(--u) * 68.1);
     display: grid;
-    grid-template-columns: repeat(5, 13.02vw);
-    gap: 0.91vw;
+    grid-template-columns: repeat(5, calc(var(--u) * 13.02));
+    gap: calc(var(--u) * 0.91);
   }
 
   .quick-tile {
-    min-height: 9.38vw;
+    min-height: calc(var(--u) * 9.38);
     padding: 0;
     border-color: transparent;
     background: transparent !important;
@@ -1027,48 +1029,48 @@ h1 span {
   .card {
     position: absolute;
     z-index: 5;
-    border-radius: 0.55vw;
+    border-radius: calc(var(--u) * 0.55);
     border-color: rgba(235, 180, 158, 0.22);
     background: #20130f;
     box-shadow: none;
     backdrop-filter: none;
-    padding: 1.45vw 1.55vw;
+    padding: calc(var(--u) * 1.45) calc(var(--u) * 1.55);
   }
 
   .today-card {
-    top: 35.94vw;
-    left: 5.4vw;
-    width: 29.75vw;
-    min-height: 15.6vw;
+    top: calc(var(--u) * 35.94);
+    left: calc(var(--u) * 5.4);
+    width: calc(var(--u) * 29.75);
+    min-height: calc(var(--u) * 15.6);
   }
 
   .updates-card {
-    top: 35.94vw;
-    left: 36.39vw;
-    width: 36.9vw;
-    min-height: 15.6vw;
+    top: calc(var(--u) * 35.94);
+    left: calc(var(--u) * 36.39);
+    width: calc(var(--u) * 36.9);
+    min-height: calc(var(--u) * 15.6);
   }
 
   .currently-card {
-    top: 52.02vw;
-    left: 5.4vw;
-    width: 32.1vw;
-    min-height: 11.2vw;
+    top: calc(var(--u) * 52.02);
+    left: calc(var(--u) * 5.4);
+    width: calc(var(--u) * 32.1);
+    min-height: calc(var(--u) * 11.2);
   }
 
   .card-header {
-    min-height: 1.6vw;
-    margin-bottom: 1.12vw;
-    gap: 0.75vw;
+    min-height: calc(var(--u) * 1.6);
+    margin-bottom: calc(var(--u) * 1.12);
+    gap: calc(var(--u) * 0.75);
   }
 
   .card-header h3 {
-    font-size: 1.05vw;
+    font-size: calc(var(--u) * 1.05);
     line-height: 1;
   }
 
   .card-header em {
-    font-size: 1vw;
+    font-size: calc(var(--u) * 1);
     line-height: 1.25;
   }
 
@@ -1077,21 +1079,21 @@ h1 span {
   .primary-link,
   .sub-header button,
   .add-inline {
-    padding: 0.45vw 0.8vw;
-    font-size: 0.78vw;
+    padding: calc(var(--u) * 0.45) calc(var(--u) * 0.8);
+    font-size: calc(var(--u) * 0.78);
   }
 
   .task-row {
-    min-height: 1.86vw;
-    gap: 0.72vw;
-    grid-template-columns: 1.2vw minmax(0, 1fr) 1.45vw;
+    min-height: calc(var(--u) * 1.86);
+    gap: calc(var(--u) * 0.72);
+    grid-template-columns: calc(var(--u) * 1.2) minmax(0, 1fr) calc(var(--u) * 1.45);
   }
 
   .checkbox {
-    width: 0.92vw;
-    height: 0.92vw;
-    border-width: 0.12vw;
-    border-radius: 0.18vw;
+    width: calc(var(--u) * 0.92);
+    height: calc(var(--u) * 0.92);
+    border-width: calc(var(--u) * 0.12);
+    border-radius: calc(var(--u) * 0.18);
   }
 
   .task-title,
@@ -1099,70 +1101,70 @@ h1 span {
   .soft-copy,
   .data-status,
   .update-row span:last-child {
-    font-size: 0.86vw;
+    font-size: calc(var(--u) * 0.86);
   }
 
   .update-row {
-    min-height: 2.75vw;
-    grid-template-columns: 1.2vw minmax(7vw, 0.8fr) minmax(10vw, 1fr);
-    gap: 1vw;
+    min-height: calc(var(--u) * 2.75);
+    grid-template-columns: calc(var(--u) * 1.2) minmax(calc(var(--u) * 7), 0.8fr) minmax(calc(var(--u) * 10), 1fr);
+    gap: calc(var(--u) * 1);
   }
 
   .status-dot {
-    width: 0.95vw;
-    height: 0.95vw;
+    width: calc(var(--u) * 0.95);
+    height: calc(var(--u) * 0.95);
   }
 
   .update-row strong {
-    font-size: 1vw;
+    font-size: calc(var(--u) * 1);
   }
 
   .currently-body {
-    grid-template-columns: 7vw 1fr;
-    gap: 1.35vw;
+    grid-template-columns: calc(var(--u) * 7) 1fr;
+    gap: calc(var(--u) * 1.35);
   }
 
   .album-plate {
-    width: 7vw;
-    height: 7vw;
+    width: calc(var(--u) * 7);
+    height: calc(var(--u) * 7);
   }
 
   .currently-body strong {
-    font-size: 1.35vw;
+    font-size: calc(var(--u) * 1.35);
   }
 
   .currently-body span {
-    font-size: 0.8vw;
+    font-size: calc(var(--u) * 0.8);
   }
 
   .static-player {
-    grid-template-columns: 1fr 2.65vw;
-    gap: 1vw;
-    margin-top: 0.95vw;
+    grid-template-columns: 1fr calc(var(--u) * 2.65);
+    gap: calc(var(--u) * 1);
+    margin-top: calc(var(--u) * 0.95);
   }
 
   .static-player button {
-    width: 2.65vw;
-    height: 2.65vw;
+    width: calc(var(--u) * 2.65);
+    height: calc(var(--u) * 2.65);
   }
 
   .sub-page {
     position: absolute;
-    top: 24.5vw;
-    left: 5.4vw;
+    top: calc(var(--u) * 24.5);
+    left: calc(var(--u) * 5.4);
     z-index: 8;
     display: block;
-    width: min(68vw, 1080px);
+    width: min(calc(var(--u) * 68), 1080px);
     max-width: none;
-    padding-bottom: 4vw;
+    padding-bottom: calc(var(--u) * 4);
   }
 
   .sub-header {
-    margin-bottom: 1vw;
+    margin-bottom: calc(var(--u) * 1);
   }
 
   .sub-header h2 {
-    font-size: 2.35vw;
+    font-size: calc(var(--u) * 2.35);
   }
 
   .management-layout,
