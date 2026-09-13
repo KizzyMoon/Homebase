@@ -871,15 +871,20 @@ h1 span {
     display: block;
     position: absolute;
     inset: auto;
-    top: calc(var(--u) * 51.35);
-    left: calc(var(--u) * 5.05);
+    top: calc(var(--u) * 50.7);
+    left: 0;
     z-index: 4;
-    width: calc(var(--u) * 34.3);
-    height: calc(var(--u) * 14.4);
-    border-radius: calc(var(--u) * 0.65);
+    width: 100%;
+    height: calc(var(--u) * 16);
+    border-radius: 0;
     background:
-      radial-gradient(circle at 0 100%, rgba(75, 42, 28, 0.32), transparent calc(var(--u) * 18)),
-      linear-gradient(90deg, #100b09 0%, rgba(16, 11, 9, 0.98) 82%, rgba(16, 11, 9, 0.7) 100%);
+      linear-gradient(
+        180deg,
+        rgba(16, 11, 9, 0) 0%,
+        rgba(16, 11, 9, 0.88) 13%,
+        rgba(16, 11, 9, 0.98) 36%,
+        #100b09 100%
+      );
     filter: none;
     opacity: 1;
   }
@@ -1004,6 +1009,7 @@ h1 span {
     left: calc(var(--u) * 5.4);
     width: calc(var(--u) * 29.75);
     height: calc(var(--u) * 15.6);
+    min-height: 0;
   }
 
   .updates-card {
@@ -1011,6 +1017,7 @@ h1 span {
     left: calc(var(--u) * 36.39);
     width: calc(var(--u) * 36.9);
     height: calc(var(--u) * 15.6);
+    min-height: 0;
   }
 
   .card-header {
