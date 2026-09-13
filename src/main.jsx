@@ -25,6 +25,7 @@ const PROJECTS_KEY = "homebase.projectUpdates.v2";
 const EMS_STATUS_KEY = "homebase.emsStatus.v1";
 const EMS_DASHBOARD_STATE_KEY = "highlife-ems-dashboard-v1";
 const EMS_PRIVATE_TRAINING_KEY = "highlife-ems-private-training-v1";
+const EMS_INTERVIEWS_KEY = "highlife-ems-interviews-v1";
 const CREATOR_REFRESH_MS = 60000;
 const EMS_REFRESH_MS = 3 * 60 * 60 * 1000;
 
@@ -665,6 +666,7 @@ function formatShortDateTime(value) {
 function emsActivitySummary() {
   const state = readStoredObject(EMS_DASHBOARD_STATE_KEY);
   const privateTraining = readStoredArray(EMS_PRIVATE_TRAINING_KEY);
+  const interviews = readStoredObject(EMS_INTERVIEWS_KEY);
   const activity = [];
   const update = state.rosterUpdate || {};
   const joined = Number(update.joined || 0);
@@ -682,6 +684,9 @@ function emsActivitySummary() {
 
   const nextTraining = nextPrivateTraining(privateTraining);
   if (nextTraining) activity.push(nextTraining);
+
+  const nextInterview = nextInterviewSession(interviews.sessions || []);
+  if (nextInterview) activity.push(nextInterview);
 
   if (!activity.length) {
     const cadets = Array.isArray(state.cadets) ? state.cadets.length : 0;
@@ -712,6 +717,18 @@ function nextPrivateTraining(events) {
   if (!upcoming) return "";
   const cadets = Array.isArray(upcoming.event.cadets) ? upcoming.event.cadets.length : 0;
   return `training ${formatShortDateTime(upcoming.date.toISOString())}${cadets ? ` (${cadets} cadet${cadets === 1 ? "" : "s"})` : ""}`;
+}
+
+function nextInterviewSession(sessions) {
+  const now = new Date();
+  const upcoming = (Array.isArray(sessions) ? sessions : [])
+    .map((session) => ({ session, date: parseEventDateTime(session) }))
+    .filter((item) => item.date && item.date >= now)
+    .sort((a, b) => a.date - b.date)[0];
+  if (!upcoming) return "";
+  const type = String(upcoming.session.type || "Interview").toLowerCase();
+  const count = Number(upcoming.session.attendeeCount || 0);
+  return `${type} ${formatShortDateTime(upcoming.date.toISOString())}${count ? ` (${count} signed up)` : ""}`;
 }
 
 function parseEventDateTime(event) {
