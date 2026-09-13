@@ -22,6 +22,9 @@ const LINKS_KEY = "homebase.links.v2";
 const TODAY_KEY = "homebase.todayTasks.v2";
 const LISTS_KEY = "homebase.todoLists.v2";
 const PROJECTS_KEY = "homebase.projectUpdates.v2";
+const EMS_STATUS_KEY = "homebase.emsStatus.v1";
+const CREATOR_REFRESH_MS = 60000;
+const EMS_REFRESH_MS = 3 * 60 * 60 * 1000;
 
 const DEFAULT_LINKS = {
   creators: CC_API_BASE,
@@ -33,10 +36,16 @@ const DEFAULT_LINKS = {
 
 const DEFAULT_PROJECTS = [
   { id: "creators", label: "Creators", accent: "orange", text: "" },
-  { id: "ems", label: "EMS", accent: "moss", text: "" },
-  { id: "twitch", label: "Twitch", accent: "pink", text: "" },
-  { id: "youtube", label: "YouTube", accent: "red", text: "" }
+  { id: "ems", label: "EMS", accent: "moss", text: "" }
 ];
+
+const DEFAULT_EMS_STATUS = {
+  status: "Checking EMS...",
+  lastChecked: "",
+  lastModified: "",
+  etag: "",
+  changed: false
+};
 
 function useStoredState(key, initialValue) {
   const [value, setValue] = useState(() => {
@@ -67,6 +76,7 @@ function App() {
   const [todayTasks, setTodayTasks] = useStoredState(TODAY_KEY, []);
   const [todoLists, setTodoLists] = useStoredState(LISTS_KEY, []);
   const [projectUpdates, setProjectUpdates] = useStoredState(PROJECTS_KEY, DEFAULT_PROJECTS);
+  const [emsData, setEmsData] = useStoredState(EMS_STATUS_KEY, DEFAULT_EMS_STATUS);
   const [modal, setModal] = useState(null);
   const [creatorData, setCreatorData] = useState({ loas: [], warnings: [], status: "Loading creator data..." });
 
@@ -80,13 +90,40 @@ function App() {
     const load = () => refreshCreatorData().then((data) => {
       if (!cancelled) setCreatorData(data);
     });
+    const loadWhenVisible = () => {
+      if (!document.hidden) load();
+    };
     load();
-    const timer = setInterval(load, 300000);
+    const timer = setInterval(load, CREATOR_REFRESH_MS);
+    window.addEventListener("focus", load);
+    document.addEventListener("visibilitychange", loadWhenVisible);
     return () => {
       cancelled = true;
       clearInterval(timer);
+      window.removeEventListener("focus", load);
+      document.removeEventListener("visibilitychange", loadWhenVisible);
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = () => {
+      setEmsData((previous) => {
+        refreshEmsData(links.ems, previous).then((data) => {
+          if (!cancelled) setEmsData(data);
+        });
+        return previous;
+      });
+    };
+    load();
+    const timer = setInterval(load, EMS_REFRESH_MS);
+    window.addEventListener("focus", load);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+      window.removeEventListener("focus", load);
+    };
+  }, [links.ems, setEmsData]);
 
   const searchItems = useMemo(() => buildSearchItems(links), [links]);
   const common = {
@@ -98,6 +135,7 @@ function App() {
     setTodoLists,
     projectUpdates,
     setProjectUpdates,
+    emsData,
     creatorData,
     setModal,
     navigate: setPage
@@ -165,7 +203,7 @@ function Hero({ now, searchTerm, setSearchTerm, runSearch }) {
 }
 
 function HomePage(props) {
-  const { links, todayTasks, setTodayTasks, projectUpdates, setProjectUpdates, setModal, creatorData, navigate } = props;
+  const { links, todayTasks, setTodayTasks, projectUpdates, setProjectUpdates, setModal, creatorData, emsData, navigate } = props;
   return (
     <div className="home-page">
       <SectionTitle>Quick Access</SectionTitle>
@@ -178,7 +216,7 @@ function HomePage(props) {
       </div>
       <div className="main-grid">
         <TodayCard tasks={todayTasks} setTasks={setTodayTasks} setModal={setModal} />
-        <ProjectUpdates updates={projectUpdates} setUpdates={setProjectUpdates} setModal={setModal} creatorData={creatorData} />
+        <ProjectUpdates updates={projectUpdates} setUpdates={setProjectUpdates} setModal={setModal} creatorData={creatorData} emsData={emsData} />
       </div>
     </div>
   );
@@ -217,11 +255,12 @@ function TodayCard({ tasks, setTasks, setModal }) {
   );
 }
 
-function ProjectUpdates({ updates, setModal, creatorData }) {
-  const rows = updates.map((item) => item.id === "creators" && !item.text
-    ? { ...item, text: creatorOverviewText(creatorData) }
-    : item
-  );
+function ProjectUpdates({ updates, setModal, creatorData, emsData }) {
+  const rows = visibleProjectRows(updates).map((item) => {
+    if (item.id === "creators" && !item.text) return { ...item, text: creatorOverviewText(creatorData) };
+    if (item.id === "ems" && !item.text) return { ...item, text: emsOverviewText(emsData) };
+    return item;
+  });
   return (
     <section className="card updates-card">
       <CardHeader title="Project Updates" note="Keep going ♡" action={<button onClick={() => setModal({ type: "projectUpdates" })}><Edit3 size={15} /> Edit</button>} />
@@ -447,7 +486,7 @@ function TextModal({ title, initial, close, onSave, onDelete }) {
 }
 
 function ProjectModal({ updates, close, onSave }) {
-  const [draft, setDraft] = useState(updates);
+  const [draft, setDraft] = useState(visibleProjectRows(updates));
   return (
     <Modal title="Edit Project Updates" close={close}>
       <div className="project-edit-list">
@@ -461,6 +500,13 @@ function ProjectModal({ updates, close, onSave }) {
       <div className="modal-actions"><button onClick={close}>Cancel</button><button className="save" onClick={() => { onSave(draft); close(); }}>Save</button></div>
     </Modal>
   );
+}
+
+function visibleProjectRows(updates) {
+  return DEFAULT_PROJECTS.map((base) => ({
+    ...base,
+    ...(Array.isArray(updates) ? updates.find((item) => item.id === base.id) : null)
+  }));
 }
 
 function saveTodayTask(text, task, setTasks) {
@@ -559,11 +605,58 @@ async function refreshCreatorData() {
   }
 }
 
+async function refreshEmsData(emsLink, previous = DEFAULT_EMS_STATUS) {
+  const checkedAt = new Date().toISOString();
+  try {
+    const dashboardUrl = new URL("ems-dashboard.html", emsLink || DEFAULT_LINKS.ems).toString();
+    const response = await fetch(dashboardUrl, { method: "HEAD", cache: "no-store" });
+    if (!response.ok) throw new Error(`EMS HTTP ${response.status}`);
+    const lastModified = response.headers.get("last-modified") || "";
+    const etag = response.headers.get("etag") || "";
+    const changed = Boolean(
+      (previous.lastModified && lastModified && previous.lastModified !== lastModified)
+      || (previous.etag && etag && previous.etag !== etag)
+    );
+    return {
+      status: "Live",
+      lastChecked: checkedAt,
+      lastModified,
+      etag,
+      changed
+    };
+  } catch {
+    return {
+      ...previous,
+      status: "EMS check unavailable",
+      lastChecked: checkedAt
+    };
+  }
+}
+
 function creatorOverviewText(creatorData) {
   if (creatorData.status !== "Live" && creatorData.status !== "Live via fallback") return creatorData.status;
   const loaCount = creatorData.loas.length;
   const warningCount = creatorData.warnings.length;
   return `${loaCount} on LOA • ${warningCount} with 2+ warnings`;
+}
+
+function emsOverviewText(emsData) {
+  if (!emsData || emsData.status === "Checking EMS...") return "Checking EMS...";
+  if (emsData.status !== "Live") return emsData.status;
+  const checked = formatShortDateTime(emsData.lastChecked);
+  const updated = formatShortDateTime(emsData.lastModified);
+  if (emsData.changed) return `Updated since last check • checked ${checked}`;
+  if (updated) return `Updated ${updated} • checked ${checked}`;
+  return `Checked ${checked}`;
+}
+
+function formatShortDateTime(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const day = date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  const time = date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  return `${day} ${time}`;
 }
 
 function normalizeLoas(rows) {
