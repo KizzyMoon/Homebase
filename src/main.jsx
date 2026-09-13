@@ -673,11 +673,14 @@ function emsActivitySummary() {
   const promotions = Number(update.promotions || 0);
   const left = Number(update.left || 0);
 
+  const latestChange = Array.isArray(state.rosterChanges) ? state.rosterChanges[0] : null;
+  const leftNames = emsNamedRosterChanges(state, "left");
+
   if (joined) activity.push(`${joined} new cadet${joined === 1 ? "" : "s"}`);
   if (promotions) activity.push(`${promotions} promotion${promotions === 1 ? "" : "s"}`);
-  if (left) activity.push(`${left} left EMS`);
+  if (leftNames.length) activity.push(formatNamedRosterSummary(leftNames, "left EMS"));
+  else if (left) activity.push(`${left} left EMS`);
 
-  const latestChange = Array.isArray(state.rosterChanges) ? state.rosterChanges[0] : null;
   if (!activity.length && latestChange?.memberName) {
     activity.push(emsRosterChangeText(latestChange));
   }
@@ -695,6 +698,20 @@ function emsActivitySummary() {
   }
 
   return activity;
+}
+
+function emsNamedRosterChanges(state, type) {
+  return (Array.isArray(state.rosterChanges) ? state.rosterChanges : [])
+    .filter((change) => change?.type === type && change.memberName)
+    .map((change) => change.memberName)
+    .filter(Boolean);
+}
+
+function formatNamedRosterSummary(names, action) {
+  const uniqueNames = [...new Set(names)];
+  if (!uniqueNames.length) return "";
+  if (uniqueNames.length === 1) return `${uniqueNames[0]} ${action}`;
+  return `${uniqueNames[0]} + ${uniqueNames.length - 1} more ${action}`;
 }
 
 function emsRosterChangeText(change) {
