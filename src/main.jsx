@@ -23,6 +23,8 @@ const TODAY_KEY = "homebase.todayTasks.v2";
 const LISTS_KEY = "homebase.todoLists.v2";
 const PROJECTS_KEY = "homebase.projectUpdates.v2";
 const EMS_STATUS_KEY = "homebase.emsStatus.v1";
+const EMS_DASHBOARD_STATE_KEY = "highlife-ems-dashboard-v1";
+const EMS_PRIVATE_TRAINING_KEY = "highlife-ems-private-training-v1";
 const CREATOR_REFRESH_MS = 60000;
 const EMS_REFRESH_MS = 3 * 60 * 60 * 1000;
 
@@ -44,7 +46,8 @@ const DEFAULT_EMS_STATUS = {
   lastChecked: "",
   lastModified: "",
   etag: "",
-  changed: false
+  changed: false,
+  activity: []
 };
 
 function useStoredState(key, initialValue) {
@@ -622,13 +625,15 @@ async function refreshEmsData(emsLink, previous = DEFAULT_EMS_STATUS) {
       lastChecked: checkedAt,
       lastModified,
       etag,
-      changed
+      changed,
+      activity: emsActivitySummary()
     };
   } catch {
     return {
       ...previous,
       status: "EMS check unavailable",
-      lastChecked: checkedAt
+      lastChecked: checkedAt,
+      activity: emsActivitySummary()
     };
   }
 }
@@ -644,10 +649,8 @@ function emsOverviewText(emsData) {
   if (!emsData || emsData.status === "Checking EMS...") return "Checking EMS...";
   if (emsData.status !== "Live") return emsData.status;
   const checked = formatShortDateTime(emsData.lastChecked);
-  const updated = formatShortDateTime(emsData.lastModified);
-  if (emsData.changed) return `Updated since last check • checked ${checked}`;
-  if (updated) return `Updated ${updated} • checked ${checked}`;
-  return `Checked ${checked}`;
+  const activity = Array.isArray(emsData.activity) ? emsData.activity.filter(Boolean).slice(0, 2).join(" • ") : "";
+  return [activity, `last checked ${checked}`].filter(Boolean).join(" • ");
 }
 
 function formatShortDateTime(value) {
@@ -655,8 +658,86 @@ function formatShortDateTime(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
   const day = date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-  const time = date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  const time = date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).replace(/\s/g, "").toLowerCase();
   return `${day} ${time}`;
+}
+
+function emsActivitySummary() {
+  const state = readStoredObject(EMS_DASHBOARD_STATE_KEY);
+  const privateTraining = readStoredArray(EMS_PRIVATE_TRAINING_KEY);
+  const activity = [];
+  const update = state.rosterUpdate || {};
+  const joined = Number(update.joined || 0);
+  const promotions = Number(update.promotions || 0);
+  const left = Number(update.left || 0);
+
+  if (joined) activity.push(`${joined} new cadet${joined === 1 ? "" : "s"}`);
+  if (promotions) activity.push(`${promotions} promotion${promotions === 1 ? "" : "s"}`);
+  if (left) activity.push(`${left} left EMS`);
+
+  const latestChange = Array.isArray(state.rosterChanges) ? state.rosterChanges[0] : null;
+  if (!activity.length && latestChange?.memberName) {
+    activity.push(emsRosterChangeText(latestChange));
+  }
+
+  const nextTraining = nextPrivateTraining(privateTraining);
+  if (nextTraining) activity.push(nextTraining);
+
+  if (!activity.length) {
+    const cadets = Array.isArray(state.cadets) ? state.cadets.length : 0;
+    const members = Array.isArray(state.members) ? state.members.length : 0;
+    if (cadets || members) activity.push(`${cadets} cadets • ${members} roster`);
+  }
+
+  return activity;
+}
+
+function emsRosterChangeText(change) {
+  if (change.type === "promotion") {
+    return `${change.memberName} promoted${change.toRank ? ` to ${change.toRank}` : ""}`;
+  }
+  if (change.type === "joined") {
+    return `${change.memberName} joined${change.toRank ? ` as ${change.toRank}` : ""}`;
+  }
+  if (change.type === "left") return `${change.memberName} left EMS`;
+  return `${change.memberName} updated`;
+}
+
+function nextPrivateTraining(events) {
+  const now = new Date();
+  const upcoming = events
+    .map((event) => ({ event, date: parseEventDateTime(event) }))
+    .filter((item) => item.date && item.date >= now)
+    .sort((a, b) => a.date - b.date)[0];
+  if (!upcoming) return "";
+  const cadets = Array.isArray(upcoming.event.cadets) ? upcoming.event.cadets.length : 0;
+  return `training ${formatShortDateTime(upcoming.date.toISOString())}${cadets ? ` (${cadets} cadet${cadets === 1 ? "" : "s"})` : ""}`;
+}
+
+function parseEventDateTime(event) {
+  const date = String(event?.date || "").trim();
+  const time = String(event?.time || "12:00").trim();
+  if (!date) return null;
+  const parsed = new Date(`${date}T${time.length === 5 ? time : "12:00"}`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function readStoredObject(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || "{}");
+    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  } catch {
+    return {};
+  }
+}
+
+function readStoredArray(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || "[]");
+    return Array.isArray(value) ? value : [];
+  } catch {
+    return [];
+  }
 }
 
 function normalizeLoas(rows) {
