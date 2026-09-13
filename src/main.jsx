@@ -7,7 +7,6 @@ import {
   ExternalLink,
   Home,
   MonitorCog,
-  Play,
   Plus,
   Search,
   Trash2,
@@ -23,7 +22,6 @@ const LINKS_KEY = "homebase.links.v2";
 const TODAY_KEY = "homebase.todayTasks.v2";
 const LISTS_KEY = "homebase.todoLists.v2";
 const PROJECTS_KEY = "homebase.projectUpdates.v2";
-const CURRENTLY_KEY = "homebase.currently.v2";
 
 const DEFAULT_LINKS = {
   creators: CC_API_BASE,
@@ -39,11 +37,6 @@ const DEFAULT_PROJECTS = [
   { id: "twitch", label: "Twitch", accent: "pink", text: "" },
   { id: "youtube", label: "YouTube", accent: "red", text: "" }
 ];
-
-const DEFAULT_CURRENTLY = {
-  title: "Cozy Mix",
-  subtitle: "Optional static note for now"
-};
 
 function useStoredState(key, initialValue) {
   const [value, setValue] = useState(() => {
@@ -74,7 +67,6 @@ function App() {
   const [todayTasks, setTodayTasks] = useStoredState(TODAY_KEY, []);
   const [todoLists, setTodoLists] = useStoredState(LISTS_KEY, []);
   const [projectUpdates, setProjectUpdates] = useStoredState(PROJECTS_KEY, DEFAULT_PROJECTS);
-  const [currently, setCurrently] = useStoredState(CURRENTLY_KEY, DEFAULT_CURRENTLY);
   const [modal, setModal] = useState(null);
   const [creatorData, setCreatorData] = useState({ loas: [], warnings: [], status: "Loading creator data..." });
 
@@ -106,8 +98,6 @@ function App() {
     setTodoLists,
     projectUpdates,
     setProjectUpdates,
-    currently,
-    setCurrently,
     creatorData,
     setModal,
     navigate: setPage
@@ -243,22 +233,6 @@ function ProjectUpdates({ updates, setModal, creatorData }) {
             <span>{item.text || "No update set"}</span>
           </div>
         ))}
-      </div>
-    </section>
-  );
-}
-
-function CurrentlyCard({ currently, setModal }) {
-  return (
-    <section className="card currently-card">
-      <CardHeader title="Currently" action={<button onClick={() => setModal({ type: "currently" })}><Edit3 size={15} /> Edit</button>} />
-      <div className="currently-body">
-        <div className="album-plate" aria-hidden="true"><span className="mini-window" /><span className="mini-candle" /></div>
-        <div>
-          <strong>{currently.title || "Optional"}</strong>
-          <span>{currently.subtitle || "Static for now, ready to wire later"}</span>
-          <div className="static-player"><span /><button aria-label="Static currently widget"><Play size={16} /></button></div>
-        </div>
       </div>
     </section>
   );
@@ -438,13 +412,12 @@ function DecorScene() {
 }
 
 function ModalHost(props) {
-  const { modal, close, setTodayTasks, setTodoLists, projectUpdates, setProjectUpdates, currently, setCurrently } = props;
+  const { modal, close, setTodayTasks, setTodoLists, projectUpdates, setProjectUpdates } = props;
   if (modal.type === "message") return <Modal title={modal.title} close={close}><p>{modal.text}</p></Modal>;
   if (modal.type === "todayTask") return <TextModal title={modal.task ? "Edit Today task" : "Add Today task"} initial={modal.task?.text || ""} close={close} onSave={(text) => saveTodayTask(text, modal.task, setTodayTasks)} onDelete={modal.task ? () => removeToday(modal.task.id, setTodayTasks) : null} />;
   if (modal.type === "todoList") return <TextModal title={modal.list ? "Edit list" : "Create list"} initial={modal.list?.title || ""} close={close} onSave={(title) => saveList(title, modal.list, setTodoLists)} onDelete={modal.list ? () => removeList(modal.list.id, setTodoLists) : null} />;
   if (modal.type === "listItem") return <TextModal title={modal.item ? "Edit item" : "Add item"} initial={modal.item?.text || ""} close={close} onSave={(text) => saveListItem(modal.listId, text, modal.item, setTodoLists)} onDelete={modal.item ? () => removeListItem(modal.listId, modal.item.id, setTodoLists) : null} />;
   if (modal.type === "projectUpdates") return <ProjectModal updates={projectUpdates} close={close} onSave={setProjectUpdates} />;
-  if (modal.type === "currently") return <CurrentlyModal currently={currently} close={close} onSave={setCurrently} />;
   return null;
 }
 
@@ -485,17 +458,6 @@ function ProjectModal({ updates, close, onSave }) {
           </label>
         ))}
       </div>
-      <div className="modal-actions"><button onClick={close}>Cancel</button><button className="save" onClick={() => { onSave(draft); close(); }}>Save</button></div>
-    </Modal>
-  );
-}
-
-function CurrentlyModal({ currently, close, onSave }) {
-  const [draft, setDraft] = useState(currently);
-  return (
-    <Modal title="Edit Currently" close={close}>
-      <label className="modal-field">Title<input value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} /></label>
-      <label className="modal-field">Subtitle<input value={draft.subtitle} onChange={(event) => setDraft({ ...draft, subtitle: event.target.value })} /></label>
       <div className="modal-actions"><button onClick={close}>Cancel</button><button className="save" onClick={() => { onSave(draft); close(); }}>Save</button></div>
     </Modal>
   );
