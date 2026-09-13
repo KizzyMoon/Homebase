@@ -860,12 +860,28 @@ h1 span {
   }
 
   .homebase::before,
-  .homebase::after,
   .hero-copy,
   .progress-note,
   .decor-scene,
   .section-title {
     display: none;
+  }
+
+  .homebase::after {
+    display: block;
+    position: absolute;
+    inset: auto;
+    top: calc(var(--u) * 51.35);
+    left: calc(var(--u) * 5.05);
+    z-index: 4;
+    width: calc(var(--u) * 34.3);
+    height: calc(var(--u) * 14.4);
+    border-radius: calc(var(--u) * 0.65);
+    background:
+      radial-gradient(circle at 0 100%, rgba(75, 42, 28, 0.32), transparent calc(var(--u) * 18)),
+      linear-gradient(90deg, #100b09 0%, rgba(16, 11, 9, 0.98) 82%, rgba(16, 11, 9, 0.7) 100%);
+    filter: none;
+    opacity: 1;
   }
 
   .hero,
